@@ -37,20 +37,40 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    async redirect({url, baseUrl}) {
+      
+      if (url === '/api/auth/signin') {
+        return `${baseUrl}`;
+      }
+
+      if (url === '/api/auth/signout') {
+        return `${baseUrl}`;
+      }
+
+      return url;
+    },
+
+    async session({ session, user }){
+
+      session = {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        }
+      }
+
+      return session
+    }
   },
+
   adapter: PrismaAdapter(db),
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
     }),
+    
     /**
      * ...add more providers here.
      *
