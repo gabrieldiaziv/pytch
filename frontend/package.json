@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "db:push": "prisma db push",
+    "db:studio": "prisma studio",
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
@@ -44,7 +45,7 @@
     "typescript": "^5.1.6"
   },
   "ct3aMetadata": {
-    "initVersion": "7.21.0"
+    "initVersion": "7.22.0"
   },
-  "packageManager": "npm@9.5.0"
+  "packageManager": "pnpm@8.6.5"
 }
