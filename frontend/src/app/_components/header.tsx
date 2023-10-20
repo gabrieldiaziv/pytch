@@ -4,10 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 
 import { MuseoModerno } from "next/font/google";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { UserNav } from "@/components/ui/avatar-nav";
 
 const museo = MuseoModerno({ subsets: ["latin"] });
 
@@ -31,17 +32,21 @@ const Header: React.FC = () => {
           <Link href="/help" className="duration-300 hover:text-gray-500">
             Help
           </Link>
-          <Button
-            variant="default"
-            // className="rounded-full bg-black px-5 py-2 font-semibold text-white no-underline transition duration-300 hover:bg-gray-500"
-            onClick={
-              session?.user
-                ? () => signOut({ redirect: true, callbackUrl: "/" })
-                : () => signIn()
-            }
-          >
-            {session?.user ? "Sign Out" : "Sign In"}
-          </Button>
+          {session?.user ? (
+            <UserNav session={session} />
+          ) : (
+            <Button
+              variant="default"
+              onClick={
+                session?.user
+                  ? () => signOut({ redirect: true, callbackUrl: "/" })
+                  : () => signIn()
+              }
+            >
+              Sign In
+            </Button>
+          )}
+
           <ModeToggle />
         </div>
       </nav>

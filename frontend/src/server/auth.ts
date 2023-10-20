@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
     async redirect({url, baseUrl}) {
       
       if (url === '/api/auth/signin') {
-        return `${baseUrl}`;
+        return `${baseUrl}/dashboard`;
       }
 
       if (url === '/api/auth/signout') {
