@@ -37,20 +37,40 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    async redirect({url, baseUrl}) {
+      
+      if (url === '/api/auth/signin') {
+        return `${baseUrl}/dashboard`;
+      }
+
+      if (url === '/api/auth/signout') {
+        return `${baseUrl}`;
+      }
+
+      return url;
+    },
+
+    async session({ session, user }){
+
+      session = {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        }
+      }
+
+      return session
+    }
   },
+
   adapter: PrismaAdapter(db),
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
     }),
+    
     /**
      * ...add more providers here.
      *
@@ -61,6 +81,13 @@ export const authOptions: NextAuthOptions = {
      * @see https://next-auth.js.org/providers/github
      */
   ],
+  pages: {
+    signIn: '/auth/signin',
+    signOut: '/auth/signout',
+    error: '/auth/error', // Error code passed in query string as ?error=
+    verifyRequest: '/auth/verify-request', // (used for check email message)
+    newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
+  },
 };
 
 /**
