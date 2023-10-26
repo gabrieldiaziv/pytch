@@ -11,8 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-
-
 function MyDropzone() {
   const onDrop = useCallback(acceptedFiles => {
     // Do something with the files
@@ -49,30 +47,24 @@ function Autocomplete({items, setFilteredItems, text, setText}) {
         const searchText = e.target.value;
         setText(e.target.value)
 
-
-
-    setFilteredItems(prevFilteredItems =>
-      items.filter((item) => item.toLowerCase().includes(searchText.toLowerCase())));
-    //   console.log(searchText);
-       
-
-        
+        setFilteredItems(prevFilteredItems =>
+        items.filter((item) => item.toLowerCase().includes(searchText.toLowerCase())));
+        //console.log(searchText);
     }
-
-
 
     return (
         <div className="w-full flex-col">
             <div className="w-full flex-row">
-            <input className="border-l-2 border-t-2 border-b-2 py-2 px-3 w-5/6" type="text" placeholder={"Search"} onInput={onType} value={text}></input>
-            
+            <input className="border-2 py-2 px-3 w-1/4" type="text" placeholder={"Search"} onInput={onType} value={text}>
+
+            </input>
             </div>
         </div>
     )
 }
 
 export default function UploadPage() {
-    let items = ["test", "breast", "bread"];
+    let items = ["test", "eggs", "bread", "bread","bread","bread","bread","breathe"];
     const [text, setText] = useState('')
     const [filteredItems, setFilteredItems] = useState([]);
     let itemList = [];
@@ -82,7 +74,7 @@ export default function UploadPage() {
 
     searchItems.forEach((item, index)=>{
         itemList.push( 
-            <Card style={{backgroundImage: `url(${'./assets/newjeans.png'})`}} className="flex flex-none h-4/5 w-1/5 bg-gray-100">
+            <Card style={{backgroundImage: `url(${'./assets/newjeans.png'})`}} className="flex flex-none h-4/5 w-[335px] bg-gray-100">
                 <CardContent className="p-2 self-end text-white">
                     {item}
                 </CardContent>
@@ -90,19 +82,21 @@ export default function UploadPage() {
         )
     })
 
-
   return (
     <div className="flex flex-col w-full h-[100svh]">
       <div className="flex w-full h-[10%]">
 
       </div>
       <div className="flex w-full h-[90%]">
-        <div className="flex flex-col h-full w-full p-4 gap-6">
+        <div className="flex flex-col h-full w-full p-4 px-20 gap-6 no-scrollbar overflow-y-scroll">
             <MyDropzone/>
-            <Autocomplete items={items} setFilteredItems={setFilteredItems} text={text} setText ={setText} />
+            <div className="flex">
+                <Autocomplete items={items} setFilteredItems={setFilteredItems} text={text} setText ={setText}/>
+            </div>
+            
           
     
-          <div className="flex flex-wrap justify-center h-full gap-4">
+          <div className="flex flex-wrap h-full gap-3">
                 {itemList}
           </div>
         </div>
