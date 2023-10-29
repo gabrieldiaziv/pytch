@@ -1,6 +1,8 @@
 -- matches
 CREATE DATABASE pytch;
 
+use pytch;
+
 -- User Table
 CREATE TABLE User (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -10,10 +12,11 @@ CREATE TABLE User (
     refresh_token VARCHAR(250)
 );
 
+
 -- OAuth Session Table
 CREATE TABLE OAuth_Session (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id VARCHAR(50) NOT NULL,
+    user_id INT NOT NULL,  
     session_token VARCHAR(250) NOT NULL,
     expires_at VARCHAR(250) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
@@ -27,7 +30,7 @@ CREATE TABLE Team (
 );
 
 -- Match Table
-CREATE TABLE Match (
+CREATE TABLE GameMatch (
     match_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     public CHAR(3),
@@ -43,8 +46,9 @@ CREATE TABLE Match (
 -- Viz Table
 CREATE TABLE Viz (
     viz_id INT PRIMARY KEY AUTO_INCREMENT,
-    name CHAR(250) NOT NULL,
-    desc CHAR(1000)
+    name VARCHAR(250) NOT NULL,  
+    descr VARCHAR(1000), 
+    url VARCHAR(250) NOT NULL  
 );
 
 -- Viz-Match Table
@@ -53,6 +57,6 @@ CREATE TABLE Viz_Match (
     viz_id INT NOT NULL,
     url CHAR(250) NOT NULL,
     PRIMARY KEY (match_id, viz_id),
-    FOREIGN KEY (match_id) REFERENCES Match(match_id) ON DELETE CASCADE,
+    FOREIGN KEY (match_id) REFERENCES GameMatch(match_id) ON DELETE CASCADE,
     FOREIGN KEY (viz_id) REFERENCES Viz(viz_id) ON DELETE CASCADE
 );
