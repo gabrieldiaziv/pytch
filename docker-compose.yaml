@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  mysql:
+    build:
+      context: ./db/mysql
+      args:
+        pass: ${MYSQL_PASS:-asdfasdf}  
+    ports: 
+      - "3306:3306"
+    networks:
+      - mysql-net
+
+  myphp:
+    depends_on:
+      - mysql
+    build:
+      context: ./db/myphp
+      args:
+        pass: ${MYSQL_PASS:-asdfasdf}  
+    environment:
+      PMA_HOST: mysql
+    ports: 
+      - "6969:80"
+    networks:
+      - mysql-net
+
+  pytch:
+    depends_on:
+      - mysql
+      - tracer
+    build:
+      context: ./frontend/
+    ports:
+      - "3000:3000"
+    networks:
+      - mysql-net
+
+  s3mock:
+    image: adobe/s3mock:3.1.0
+    environment:
+      - initialBuckets=bucket1
+    ports:
+      - 9090:9090 
+
+  tracer:
+    depends_on:
+      - mysql
+    build:
+      context: ./tracker/
+    volumes:
+      - ./tracker:/app
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - mysql-net
+
+networks:
+  mysql-net:
