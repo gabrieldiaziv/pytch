@@ -13,7 +13,7 @@ from track.video import VideoConfig
 
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
-ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
+ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super secret key'
@@ -65,12 +65,15 @@ def detect_post():
     file = request.files["file"]
     if file.filename is None or file.filename == "":
         flash("No selected file")
+        print('no file')
         return redirect(request.url)
     if not allowed_file(file.filename):
         flash(f"filetype not supported. Use one of the following {ALLOWED_EXTENSIONS}")
+        print('file not supported')
         return redirect(request.url)
 
     if file_ext(file.filename) in ALLOWED_IMAGE_EXTENSIONS:
+        print("PROCCESSING IMAGE")
         img_bytes = file.read()
         img = np.fromstring(img_bytes, np.uint8)
         img = cv2.imdecode(img, cv2.IMREAD_COLOR)
