@@ -1,0 +1,3 @@
+[submodule "tracker/track/ByteTrack"]
+	path = tracker/track/ByteTrack
+	url = https://github.com/ifzhang/ByteTrack.git

@@ -80,3 +80,17 @@ class Detection:
     class_name: str
     confidence: float
     tracker_id: Optional[int] = None
+
+    def box(self, with_confidence: bool = True) -> list[float]:
+        return [
+            self.rect.top_left.x, 
+            self.rect.top_left.y,
+            self.rect.bottom_right.x,
+            self.rect.bottom_right.y,
+            self.confidence
+        ] if with_confidence else [
+            self.rect.top_left.x, 
+            self.rect.top_left.y,
+            self.rect.bottom_right.x,
+            self.rect.bottom_right.y
+        ]
