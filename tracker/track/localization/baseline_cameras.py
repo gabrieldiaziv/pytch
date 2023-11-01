@@ -7,15 +7,17 @@ from tqdm import tqdm
 from camera import unproject_image_point
 from soccerpitch import SoccerPitch
 
-def draw_points(canvas, lines, field):
-    for line in lines:
-        x1, y1, _ = line[0]
-        x2, y2, _ = line[1]
-        x1p = field.x_to_image(960,x1)
-        x2p = field.x_to_image(960,x2)
-        y1p = field.y_to_image(540,y1)
-        y2p = field.y_to_image(540,y2)
+def draw_detected_pitch_lines(canvas, lines, line_names, field):
+    height, width, _ = canvas.shape
+    for i in range(len(lines)):
+        x1, y1, _ = lines[i][0]
+        x2, y2, _ = lines[i][1]
+        x1p = field.x_to_image(width,x1)
+        x2p = field.x_to_image(width,x2)
+        y1p = field.y_to_image(height,y1)
+        y2p = field.y_to_image(height,y2)
         cv.line(canvas, (x1p, y1p), (x2p, y2p), (255, 0, 0), 2)
+        cv.putText(canvas, line_names[i], (x1p, y1p), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 1, cv.LINE_AA)
 
     return canvas
 
@@ -124,6 +126,7 @@ def draw_pitch_homography(image, homography):
     :param homography: homography that captures the relation between the world pitch plane and the image
     :return: modified image
     """
+    height, width, _ = image.shape
     field = SoccerPitch()
     polylines = field.sample_field_points()
     for line in polylines.values():
@@ -134,7 +137,7 @@ def draw_pitch_homography(image, homography):
                 if projected[2] == 0.:
                     continue
                 projected /= projected[2]
-                if 0 < projected[0] < 960 and 0 < projected[1] < 540:
+                if 0 < projected[0] < height and 0 < projected[1] < width:
                     cv.circle(image, (int(projected[0]), int(projected[1])), 1, (255, 0, 0), 1)
 
     return image
@@ -146,6 +149,7 @@ def homography_from_extremities(predictions, width, height):
     line_matches = []
     potential_3d_2d_matches = {}
     line_points = []
+    line_names = []
 
     src_pts = []
     success = False
@@ -177,14 +181,12 @@ def homography_from_extremities(predictions, width, height):
         if line_pitch is not None:
             line_matches.append((line_pitch, line))
             line_points.append(field.get_line_vertices(k))
+            line_names.append(k)
     if len(line_matches) >= 4:
         target_pts = [field.point_dict[k][:2] for k in potential_3d_2d_matches.keys()]
         T1 = normalization_transform(target_pts)
         T2 = normalization_transform(src_pts)
-        print(target_pts)
-        src2 = [s[:2] for s in src_pts]
-        print(src2)
         success, homography = estimate_homography_from_line_correspondences(line_matches, T1, T2)
         if success:
-            return True, homography
-        return False, homography
+            return True, homography, line_names, line_points
+        return False, homography, line_names, line_points
