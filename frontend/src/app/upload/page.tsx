@@ -13,9 +13,29 @@ import { useDropzone } from "react-dropzone";
 
 function MyDropzone() {
   const onDrop = useCallback(<T extends File>(acceptedFiles: T[]) => {
-    // Do something with the files
+    acceptedFiles.forEach((file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      fetch("/detect", {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    });
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      "video/*": [".mp4", ".flv"],
+    },
+    onDrop,
+  });
 
   return (
     <div
