@@ -1,11 +1,9 @@
 import cv2 as cv
-import json
 
 # Small script to show detected and classified lines in the original image
 
-import detect_extremities
-import baseline_cameras
-import localization
+from . import detect_extremities
+from . import localization
 
 img = cv.imread("04040.jpg")
 h, w, _ = img.shape

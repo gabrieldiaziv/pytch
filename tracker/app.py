@@ -17,7 +17,7 @@ ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
 
 app = Flask(__name__)
 
-model = Tracker(model_type='yolov8n.pt')
+model = Tracker(model_type='best.pt')
 
 base_annontator = BaseAnnotator(colors=COLORS, thickness=THICKNESS)
 text_annontator = TextAnnotator(background_color=(255, 255, 255), text_color=(0, 0, 0), text_thickness=2)
@@ -97,7 +97,7 @@ def detect_post():
             height=1080,
         ).new_video(output_file)
 
-        for frame, detects in model.detect_video(upload_file):
+        for frame, detects, _ in model.detect_video(upload_file):
             label_img = frame.copy()
             label_img = base_annontator.annotate(label_img, detects)
             label_img = text_annontator.annotate(label_img, detects)

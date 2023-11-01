@@ -4,8 +4,8 @@ import os
 import cv2 as cv
 import numpy as np
 from tqdm import tqdm
-from camera import unproject_image_point
-from soccerpitch import SoccerPitch
+from .camera import unproject_image_point
+from .soccerpitch import SoccerPitch
 
 def draw_points(canvas, lines, field):
     for line in lines:

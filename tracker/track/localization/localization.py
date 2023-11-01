@@ -1,6 +1,6 @@
-import detect_extremities
-import baseline_cameras
-from camera import unproject_image_point
+from . import detect_extremities
+from . import baseline_cameras
+from .camera import unproject_image_point
 import cv2 as cv
 
 

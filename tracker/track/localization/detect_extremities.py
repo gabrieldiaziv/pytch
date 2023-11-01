@@ -12,7 +12,7 @@ from PIL import Image
 from torchvision.models.segmentation import deeplabv3_resnet50
 from tqdm import tqdm
 
-from soccerpitch import SoccerPitch
+from .soccerpitch import SoccerPitch
 
 
 def generate_class_synthesis(semantic_mask, radius):

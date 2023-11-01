@@ -12,7 +12,7 @@ import numpy as np
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-from soccerpitch import SoccerPitch
+from .soccerpitch import SoccerPitch
 
 
 class SoccerNetDataset(Dataset):

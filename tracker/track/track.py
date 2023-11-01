@@ -9,8 +9,10 @@ from onemetric.cv.utils.iou import box_iou_batch
 
 from yolox.tracker.byte_tracker import BYTETracker, STrack
 
-from track.video import generate_frames
-from track.utils import Detection, Rect
+from .video import generate_frames
+from .utils import Detection, Rect
+
+from .localization import localization  
 
 @dataclass(frozen=True)
 class BYTETrackerArgs:
@@ -25,6 +27,7 @@ class Tracker:
     def __init__(self, model_type:str = 'best.pt', tracker_args: BYTETrackerArgs = BYTETrackerArgs()):
         self.model = YOLO(model=model_type)
         self.byte_tracker = BYTETracker(tracker_args)
+        self.localizer = localization.init_segmentation_network(width=1920, height=1080)
 
     def detect_image(self, img: np.ndarray) -> list[Detection]:
         predicitons: list[Results] = self.model.predict(img)
@@ -44,9 +47,10 @@ class Tracker:
 
         return detections 
 
-    def detect_video(self, vid_path:str) -> Generator[tuple[np.ndarray, list[Detection]], None, None]:
+    def detect_video(self, vid_path:str) -> Generator[tuple[np.ndarray, list[Detection], list[tuple[float, float]]], None, None]:
         for frame in generate_frames(vid_path):
             detections = self.detect_image(frame)
+            print(detections[0].class_id)
             # tracks = self.byte_tracker.update(
             #     output_results=np.array([d.box() for d in detections]),
             #     img_info=frame.shape,
@@ -54,7 +58,10 @@ class Tracker:
             # )
 
             # detections = self._match_detections(detections, tracks)
-            yield frame, detections
+            frame_points = [detect.rect.bottom_center for detect in detections] 
+            global_points = localization.get_pitch_locations(frame, frame_points, self.localizer)
+            
+            yield frame, detections, global_points
 
     
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:
