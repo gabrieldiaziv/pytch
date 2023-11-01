@@ -1,0 +1,3 @@
+To prune the entire docker: docker system prune -a  
+To run the docker: docker compose up -d mysql myphp
+
