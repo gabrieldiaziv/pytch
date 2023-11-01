@@ -20,7 +20,8 @@ def get_pitch_locations(frame, points, network, test=False):
     height, width, _ = frame.shape
     extremities = detect_extremities.analyze_frame(frame, network)
     success, homography, line_names, line_points = baseline_cameras.homography_from_extremities(extremities, width, height)
-    localized_points = [unproject_image_point(homography, point) for point in points]
+    inv_homography = np.linalg.inv(homography)
+    localized_points = [unproject_image_point(inv_homography, point) for point in points]
     if test:
         img_viz = np.full((height, width, 3), 255, dtype=np.uint8)
         img_lines = show_lines(frame, extremities)

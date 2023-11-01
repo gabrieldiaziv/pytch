@@ -54,7 +54,7 @@ def rotation_matrix_to_pan_tilt_roll(rotation):
     return second_pan, second_tilt, second_roll
 
 
-def unproject_image_point(homography, point2D):
+def unproject_image_point(inv_homography, point2D):
     """
     Given the homography from the world plane of the pitch and the image and a point localized on the pitch plane in the
     image, returns the coordinates of the point in the 3D pitch plane.
@@ -64,8 +64,7 @@ def unproject_image_point(homography, point2D):
     :return: A 2D point on the world pitch plane in homogenous coordinates (X,Y,1) with X and Y being the world
     coordinates of the point.
     """
-    hinv = np.linalg.inv(homography)
-    pitchpoint = hinv @ point2D
+    pitchpoint = inv_homography @ point2D
     pitchpoint = pitchpoint / pitchpoint[2]
     return pitchpoint
 
