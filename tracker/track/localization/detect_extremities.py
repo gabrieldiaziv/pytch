@@ -196,7 +196,7 @@ def synthesize_mask(semantic_mask, disk_radius):
 
 
 class SegmentationNetwork:
-    def __init__(self, model_file, mean_file, std_file, num_classes=29, width=640, height=360):
+    def __init__(self, model_file, mean_file, std_file, num_classes=29, width=960, height=540):
         file_path = Path(model_file).resolve()
         model = nn.DataParallel(deeplabv3_resnet50(pretrained=False, num_classes=num_classes))
         self.init_weight(model, nn.init.kaiming_normal_,
@@ -251,7 +251,8 @@ def analyze_frame(frame, network):
     lines_palette = [0, 0, 0]
     for line_class in SoccerPitch.lines_classes:
         lines_palette.extend(SoccerPitch.palette[line_class])
-    width, height, _ = frame.shape
+    width = 960
+    height = 540
     semlines = network.analyze(frame)
     skeletons = generate_class_synthesis(semlines, 6)
     extremities = get_line_extremities(skeletons, 40, width, height)

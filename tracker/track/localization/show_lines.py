@@ -3,12 +3,16 @@ import json
 
 # Small script to show detected and classified lines in the original image
 
-img = cv.imread("../datasets/calibration-2023/challenge/00000.jpg")
-file = open("../predictions/challenge/extremities_00000.json")
-data = json.load(file)
+import detect_extremities
+import baseline_cameras
+import localization
+
+img = cv.imread("04040.jpg")
+h, w, _ = img.shape
+network = localization.init_segmentation_network(w, h)
+data = detect_extremities.analyze_frame(img, network)
 
 h, w, _ = img.shape
-print(h, w)
 
 for key in data:
     print(data[key])

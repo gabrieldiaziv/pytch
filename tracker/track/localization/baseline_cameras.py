@@ -181,6 +181,9 @@ def homography_from_extremities(predictions, width, height):
         target_pts = [field.point_dict[k][:2] for k in potential_3d_2d_matches.keys()]
         T1 = normalization_transform(target_pts)
         T2 = normalization_transform(src_pts)
+        print(target_pts)
+        src2 = [s[:2] for s in src_pts]
+        print(src2)
         success, homography = estimate_homography_from_line_correspondences(line_matches, T1, T2)
         if success:
             return True, homography
