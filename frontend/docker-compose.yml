@@ -1,0 +1,19 @@
+# example at https://geshan.com.np/blog/2022/02/mysql-docker-compose/
+
+services:
+  pytch-mysql:
+    container_name: pytch-mysql # prevents numbers from being appended to the container name
+    cap_add:
+      - SYS_NICE # suppress not useful error messages
+    image: mysql
+    environment:
+      MYSQL_DATABASE: pytch
+      MYSQL_ROOT_PASSWORD: pytch
+    ports:
+      - "3306:3306" # MySQL port
+    volumes:
+      - db:/var/lib/mysql # MySQL data directory
+volumes:
+  db: # automatically managed by docker
+    name: pytch-db
+    driver: local

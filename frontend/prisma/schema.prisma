@@ -6,24 +6,13 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider     = "mysql"
     // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
     // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
-}
-
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
 // Necessary for Next auth
@@ -33,15 +22,17 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String?
-    access_token      String?
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String?
+    id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
 model Session {
@@ -50,6 +41,8 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
 }
 
 model User {
@@ -60,7 +53,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+    UserData      UserData?
 }
 
 model VerificationToken {
@@ -69,4 +62,66 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+// ---------------------------- auth models end
+
+enum Role {
+    ADMIN
+    INITIAL_USER
+    USER
+}
+
+// user's data not related to auth
+model UserData {
+    id           String      @id @default(cuid())
+    user         User        @relation(fields: [id], references: [id], onDelete: Cascade)
+    username     String      @unique
+    display_name String
+    GameMatch    GameMatch[]
+    type         Role
+
+    @@index([id])
+}
+
+model Team {
+    id          String      @id @default(cuid())
+    name        String      @db.VarChar(50)
+    league      String?     @db.VarChar(50)
+    homeMatches GameMatch[] @relation("teamHome")
+    awayMatches GameMatch[] @relation("teamAway")
+}
+
+enum MatchVisibility {
+    PUBLIC
+    PRIVATE
+}
+
+model GameMatch {
+    match_id    String          @id @default(cuid())
+    user_id     String
+    public      MatchVisibility @default(PUBLIC)
+    name        String?         @db.VarChar(50) // name given by user for match
+    teamid_home String?
+    teamid_away String?
+    date        DateTime? // date match was uploaded
+    user        UserData        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    teamHome    Team?           @relation(fields: [teamid_home], references: [id], onDelete: SetNull, name: "teamHome")
+    teamAway    Team?           @relation(fields: [teamid_away], references: [id], onDelete: SetNull, name: "teamAway")
+    Viz         Viz[]
+
+    @@index([user_id])
+    @@index([teamid_home])
+    @@index([teamid_away])
+}
+
+model Viz {
+    viz_id    String    @id @default(cuid())
+    match_id  String
+    name      String    @db.VarChar(250)
+    descr     String?   @db.VarChar(1000)
+    url       String    @db.VarChar(250)
+    Viz_Match GameMatch @relation(fields: [match_id], references: [match_id], onDelete: Cascade)
+
+    @@index([match_id])
 }
