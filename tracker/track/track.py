@@ -12,7 +12,7 @@ from yolox.tracker.byte_tracker import BYTETracker, STrack
 from .video import generate_frames
 from .utils import Detection, Rect
 
-from .localization import localization  
+# from .localization import localization  
 
 @dataclass(frozen=True)
 class BYTETrackerArgs:
@@ -27,7 +27,7 @@ class Tracker:
     def __init__(self, model_type:str = 'best.pt', tracker_args: BYTETrackerArgs = BYTETrackerArgs()):
         self.model = YOLO(model=model_type)
         self.byte_tracker = BYTETracker(tracker_args)
-        self.localizer = localization.init_segmentation_network(width=1920, height=1080)
+        # self.localizer = localization.init_segmentation_network(width=1920, height=1080)
 
     def detect_image(self, img: np.ndarray) -> list[Detection]:
         predicitons: list[Results] = self.model.predict(img)
@@ -59,7 +59,8 @@ class Tracker:
 
             # detections = self._match_detections(detections, tracks)
             frame_points = [detect.rect.bottom_center for detect in detections] 
-            global_points = localization.get_pitch_locations(frame, frame_points, self.localizer)
+            # global_points = localization.get_pitch_locations(frame, frame_points, self.localizer)
+            global_points = []
             
             yield frame, detections, global_points
 

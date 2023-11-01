@@ -16,6 +16,7 @@ ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
 ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_VIDEO_EXTENSIONS
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'super secret key'
 
 model = Tracker(model_type='best.pt')
 
