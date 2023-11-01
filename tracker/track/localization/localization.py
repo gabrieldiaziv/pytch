@@ -24,7 +24,7 @@ def get_pitch_locations(frame, points, network):
 
 
 def main():
-    frame = cv.imread("00002.jpg")
+    frame = cv.imread("00000.jpg")
     h, w, _ = frame.shape
     network = init_segmentation_network(w, h)
     print(get_pitch_locations(frame, [(480, 270, 1)], network))
