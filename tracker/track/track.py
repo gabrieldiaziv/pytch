@@ -27,6 +27,7 @@ class Tracker:
         self.model = YOLO(model=model_type)
         self.byte_tracker = BYTETracker(tracker_args)
         self.localizer = localization.init_segmentation_network(width=960, height=540)
+        self.homography_rate = 10
 
     def detect_image(self, img: np.ndarray) :
         predicitons: list[Results] = self.model.predict(img)
@@ -48,22 +49,31 @@ class Tracker:
 
         return detections 
 
-    def detect_video(self, vid_path:str) -> list[tuple[np.ndarray, list[Detection], list[tuple[float, float]]]]:
+    def detect_video(self, vid_path:str) -> list[tuple[np.ndarray, list[Detection], list[tuple[float, float]], dict, list, list]]:
+        i = 0
         output = []
-        for frame in generate_frames(vid_path):
-            detections = self.detect_image(frame)
-            print(detections[0].class_id)
-            # tracks = self.byte_tracker.update(
-            #     output_results=np.array([d.box() for d in detections]),
-            #     img_info=frame.shape,
-            #     img_size=frame.shape,
-            # )
+        inv_homography = np.eye(3)
+        extremities = dict()
+        line_names = []
+        line_points = []
 
-            # detections = self._match_detections(detections, tracks)
+        for frame in generate_frames(vid_path):
+            if i % self.homography_rate ==0:
+                inv_homography, extremities, line_names, line_points = localization.get_homography(frame, self.localizer)
+                
+            detections = self.detect_image(frame)
+            tracks = self.byte_tracker.update(
+                output_results=np.array([d.box() for d in detections]),
+                img_info=frame.shape,
+                img_size=frame.shape,
+            )
+
+            detections = self._match_detections(detections, tracks)
             frame_points = [detect.rect.bottom_center.xy + (1,) for detect in detections] 
-            global_points, frame = localization.get_pitch_locations(frame, frame_points, self.localizer, test=True)
+            global_points = localization.get_pitch_locations(frame_points, inv_homography, test=True)
             
-            output.append((frame, detections, global_points))
+            output.append((frame, detections, global_points, extremities, line_names, line_points))
+            i+=1
         return output
 
     

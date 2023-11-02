@@ -1,16 +1,17 @@
 from io import BytesIO
 import tempfile
+import zipfile
 
 from flask import Flask, flash, request, redirect, send_file
 from flask_cors import CORS
 from PIL import Image
 import cv2
 import numpy as np
-from werkzeug.datastructures import FileStorage
 
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
 from track.video import VideoConfig
+from track.localization import localization
 
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
@@ -95,23 +96,48 @@ def detect_post():
         _, upload_file = tempfile.mkstemp(suffix=f"{file.filename.rsplit('.', 1)[1].lower()}")
         file.save(upload_file)
 
-        _, output_file = tempfile.mkstemp(suffix=f".mp4")
+        _, label_vid = tempfile.mkstemp(suffix=f".mp4")
+        _, twod_vid = tempfile.mkstemp(suffix=f".mp4")
         
-        video_writer = VideoConfig(
+        label_writer = VideoConfig(
             fps=30,
             width=1920,
             height=1080,
-        ).new_video(output_file)
+        ).new_video(label_vid)
 
-        for frame, detects, coords in model.detect_video(upload_file):
+        twod_writer = VideoConfig(
+            fps=30,
+            width=1920,
+            height=1080,
+        ).new_video(twod_vid)
+
+        for frame, detects, coords, extremities, line_names, line_points  in model.detect_video(upload_file):
             label_img = frame.copy()
+            h, w, _ = frame.shape
+
             label_img = base_annontator.annotate(label_img, detects)
             label_img = text_annontator.annotate(label_img, detects, coords)
-            
-            video_writer.write(label_img)
+            label_img = localization.show_lines(label_img, extremities)
 
-        video_writer.release()
-        return send_file(output_file, as_attachment=True)
+            twod_img = localization.twod_img(h, w, coords ,line_names, line_points)
+
+            label_writer.write(label_img)
+            twod_writer.write(twod_img)
+
+
+        label_writer.release()
+        twod_writer.release()
+
+        memory_file = BytesIO()
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                zipf.write(label_vid)
+                zipf.write(twod_vid)
+
+        # Set the file pointer to the beginning of the file
+        memory_file.seek(0)
+
+        # Send the zip file as an attachment
+        return send_file(memory_file, download_name='files.zip', as_attachment=True)
 
     return 'Invalid Request'
 

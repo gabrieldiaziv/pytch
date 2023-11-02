@@ -109,10 +109,10 @@ class TextAnnotator:
             y = center_y - height // 2 + 10
             
             # draw background
-            annotated_image = draw_filled_rect(
-                image=annotated_image, 
-                rect=Rect(x=x, y=y, width=width, height=height).pad(padding=5), 
-                color=self.background_color)
+            # annotated_image = draw_filled_rect(
+            #     image=annotated_image, 
+            #     rect=Rect(x=x, y=y, width=width, height=height).pad(padding=5), 
+            #     color=self.background_color)
             
             # draw text
             annotated_image = draw_text(

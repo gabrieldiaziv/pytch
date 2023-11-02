@@ -16,7 +16,7 @@ def draw_detected_pitch_lines(canvas, lines, line_names, field):
         x2p = field.x_to_image(width,x2)
         y1p = field.y_to_image(height,y1)
         y2p = field.y_to_image(height,y2)
-        cv.line(canvas, (x1p, y1p), (x2p, y2p), (255, 0, 0), 2)
+        cv.line(canvas, (x1p, y1p), (x2p, y2p), (255, 0, 0), 4)
         cv.putText(canvas, line_names[i], (x1p, y1p), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 1, cv.LINE_AA)
 
     return canvas
