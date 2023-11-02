@@ -1,13 +1,10 @@
 import Link from "next/link";
 
+import { buttonVariants } from "@/app/_components/ui/button";
 import { getServerAuthSession } from "@/server/auth";
-import Head from "next/head";
-import { api } from "@/trpc/server";
-import { buttonVariants } from "@/components/ui/button"
 
-export default async function Home() {
-  const hello = await api.post.hello.query({ text: "from tRPC" });
-  const session = await getServerAuthSession();
+export default function Home() {
+  // const hello = await api.post.hello.query({ text: "from tRPC" });
 
   return (
     <main className="flex min-h-screen flex-col items-center">
@@ -21,7 +18,7 @@ export default async function Home() {
         ></video>
         <div className="absolute -inset-px bg-gray-900/50"></div>
         <div className="absolute -inset-px bg-gradient-to-b from-transparent via-transparent to-gray-900"></div>
-        <div className="z-10 flex flex-col gap-4 p-6 md:w-2/5 text-white">
+        <div className="z-10 flex flex-col gap-4 p-6 text-white md:w-2/5">
           <h1 className="text-5xl font-bold max-md:text-4xl md:w-3/4">
             Advanced soccer stats, all for free.
           </h1>
@@ -29,7 +26,7 @@ export default async function Home() {
             Get computer vision-powered insights on any football match and
             elevate your game analysis like never before.
           </p>
-          <AuthShowcase/>
+          <AuthShowcase />
         </div>
       </section>
     </main>

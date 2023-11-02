@@ -1,14 +1,14 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import React from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/app/_components/ui/button";
 
+import { UserNav } from "@/app/_components/ui/avatar-nav";
+import { ModeToggle } from "@/app/_components/ui/mode-toggle";
 import { MuseoModerno } from "next/font/google";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-import { UserNav } from "@/components/ui/avatar-nav";
 
 const museo = MuseoModerno({ subsets: ["latin"] });
 

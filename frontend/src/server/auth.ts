@@ -4,10 +4,13 @@ import {
   type DefaultSession,
   type NextAuthOptions,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import Auth0Provider, { type Auth0Profile } from "next-auth/providers/auth0";
 
 import { env } from "@/env.mjs";
 import { db } from "@/server/db";
+import { getBaseUrl } from "@/utils";
+import { type Role } from "@prisma/client";
+import UserService from "./service/user";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -19,15 +22,15 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
+      type: Role;
+      username: string;
+      displayName: string;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface Profile extends Auth0Profile {
+    email_verified: boolean; // from user stored in Auth0
+  }
 }
 
 /**
@@ -36,41 +39,78 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
-    async redirect({url, baseUrl}) {
-      
-      if (url === '/api/auth/signin') {
+    redirect({ url, baseUrl }) {
+      if (url === "/api/auth/signin") {
         return `${baseUrl}/dashboard`;
       }
 
-      if (url === '/api/auth/signout') {
+      if (url === "/api/auth/signout") {
         return `${baseUrl}`;
       }
 
       return url;
     },
+    jwt: async ({ trigger, user, token, profile }) => {
+      if (trigger === "signUp") {
+        // create new user in database
+        await UserService.createUser(user.id, user.name ?? "");
+      }
 
-    async session({ session, user }){
+      if (user) {
+        if (profile) {
+          // check if email is verified from Auth0
+          token.email_verified = profile.email_verified;
+        }
+        if (token.email_verified) {
+          // get existing user
+          const dbUser = await UserService.getUserById(user.id);
+          if (dbUser) {
+            token.userId = dbUser.id;
+            token.userType = dbUser.type;
+            token.username = dbUser.username;
+            token.displayName = dbUser.display_name;
+          }
+        }
+      }
 
+      return token;
+    },
+    session({ session, token }) {
       session = {
         ...session,
         user: {
           ...session.user,
-          id: user.id,
-        }
-      }
+          id: String(token.userId),
+          type: token.userType as Role,
+          username: String(token.username),
+          displayName: String(token.displayName),
+        },
+      };
 
-      return session
-    }
+      return session;
+    },
   },
 
   adapter: PrismaAdapter(db),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    Auth0Provider({
+      clientId: env.AUTH0_CLIENT_ID,
+      clientSecret: env.AUTH0_CLIENT_SECRET,
+      issuer: env.AUTH0_ISSUER,
+      authorization: {
+        params: {
+          scope: "openid profile email offline_access",
+          prompt: "login",
+          redirect_uri: getBaseUrl() + "/api/auth/callback/auth0",
+          response_type: "code",
+        },
+      },
     }),
-    
+
     /**
      * ...add more providers here.
      *
@@ -82,12 +122,11 @@ export const authOptions: NextAuthOptions = {
      */
   ],
   pages: {
-    signIn: '/auth/signin',
-    signOut: '/auth/signout',
-    error: '/auth/error', // Error code passed in query string as ?error=
-    verifyRequest: '/auth/verify-request', // (used for check email message)
-    newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
+    signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    error: "/auth/error", // Error code passed in query string as ?error=
   },
+  secret: env.NEXTAUTH_SECRET,
 };
 
 /**

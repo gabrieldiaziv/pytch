@@ -1,8 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { Icons } from "@/components/icons";
-import { useSearchParams } from "next/navigation";
+import { Button } from "@/app/_components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,23 +8,39 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+} from "@/app/_components/ui/card";
+import { Icons } from "@/app/_components/icons";
+import { createId } from "@paralleldrive/cuid2";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
+import { env } from "@/env.mjs";
+import { getBaseUrl } from "@/utils";
 import { MuseoModerno } from "next/font/google";
 
 const museo = MuseoModerno({ subsets: ["latin"] });
 
 const Form = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams?.get("callbackUrl") || "/";
 
-  const onDiscordSubmit = async (e: React.FormEvent) => {
+  const redirectLogin = (
+    e: React.FormEvent,
+    connection: "google-oauth2" | "github",
+  ) => {
     e.preventDefault();
-    const res = await signIn("discord", {
-      redirect: false,
-      callbackUrl,
-    });
+
+    console.log(connection);
+
+    const res = void signIn(
+      "auth0",
+      {
+        redirect: true,
+        callbackUrl: `${getBaseUrl()}`,
+      },
+      {
+        connection,
+      },
+    );
   };
 
   const notifications = [
@@ -58,11 +72,17 @@ const Form = () => {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-6">
-              <Button onClick={onDiscordSubmit} variant="outline">
+              <Button
+                onClick={(e) => redirectLogin(e, "github")}
+                variant="outline"
+              >
                 <Icons.gitHub className="mr-2 h-4 w-4" />
                 Github
               </Button>
-              <Button variant="outline">
+              <Button
+                onClick={(e) => redirectLogin(e, "google-oauth2")}
+                variant="outline"
+              >
                 <Icons.google className="mr-2 h-4 w-4" />
                 Google
               </Button>
