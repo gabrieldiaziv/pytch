@@ -11,7 +11,6 @@ from yolox.tracker.byte_tracker import BYTETracker, STrack
 
 from .video import generate_frames
 from .utils import Detection, Rect
-
 from .localization import localization  
 
 @dataclass(frozen=True)
@@ -49,7 +48,8 @@ class Tracker:
 
         return detections 
 
-    def detect_video(self, vid_path:str) -> Generator[tuple[np.ndarray, list[Detection], list[tuple[float, float]]], None, None]:
+    def detect_video(self, vid_path:str) -> list[tuple[np.ndarray, list[Detection], list[tuple[float, float]]]]:
+        output = []
         for frame in generate_frames(vid_path):
             detections = self.detect_image(frame)
             print(detections[0].class_id)
@@ -61,9 +61,10 @@ class Tracker:
 
             # detections = self._match_detections(detections, tracks)
             frame_points = [detect.rect.bottom_center.xy + (1,) for detect in detections] 
-            global_points = localization.get_pitch_locations(frame, frame_points, self.localizer, test=False)
+            global_points, frame = localization.get_pitch_locations(frame, frame_points, self.localizer, test=True)
             
-            yield frame, detections, global_points
+            output.append((frame, detections, global_points))
+        return output
 
     
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:

@@ -79,7 +79,7 @@ class Detection:
     class_id: int
     class_name: str
     confidence: float
-    tracker_id: Optional[int] = None
+    tracker_id: Optional[int] = -1
 
     def box(self, with_confidence: bool = True) -> list[float]:
         return [

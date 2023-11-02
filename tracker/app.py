@@ -103,10 +103,10 @@ def detect_post():
             height=1080,
         ).new_video(output_file)
 
-        for frame, detects, _ in model.detect_video(upload_file):
+        for frame, detects, coords in model.detect_video(upload_file):
             label_img = frame.copy()
             label_img = base_annontator.annotate(label_img, detects)
-            label_img = text_annontator.annotate(label_img, detects)
+            label_img = text_annontator.annotate(label_img, detects, coords)
             
             video_writer.write(label_img)
 

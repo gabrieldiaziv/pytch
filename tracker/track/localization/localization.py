@@ -5,7 +5,7 @@ import cv2 as cv
 import numpy as np
 from .soccerpitch import SoccerPitch
 
-
+PITCH = SoccerPitch()
 # Call this at the start of analyzing a video
 # Initializes the network to do the line detection
 def init_segmentation_network(width, height):
@@ -16,23 +16,23 @@ def init_segmentation_network(width, height):
 
 # Returns a list of pitch locations given a cv2 image, a list of image points to convert, and a SegmentationNetwork instance
 def get_pitch_locations(frame, points, network, test=False):
-    pitch = SoccerPitch()
     height, width, _ = frame.shape
     extremities = detect_extremities.analyze_frame(frame, network)
     success, homography, line_names, line_points = baseline_cameras.homography_from_extremities(extremities, width, height)
     inv_homography = np.linalg.inv(homography)
     localized_points = [unproject_image_point(inv_homography, point) for point in points]
+    print("success: ", success)
     if test:
-        img_viz = np.full((height, width, 3), 255, dtype=np.uint8)
-        #img_lines = show_lines(frame, extremities)
-        img_homography = baseline_cameras.draw_pitch_homography(frame, homography)
+        # img_viz = np.full((height, width, 3), 255, dtype=np.uint8)
+        img_lines = show_lines(frame, extremities)
+        # img_homography = baseline_cameras.draw_pitch_homography(frame, homography)
         #img_viz = baseline_cameras.draw_detected_pitch_lines(img_viz, line_points, line_names, pitch)
-        for localized_point in localized_points:
-            img_viz = cv.circle(img_viz, (pitch.x_to_image(width, localized_point[0]), pitch.y_to_image(height, localized_point[1])), 2, (0, 255, 0), 2)
+        # for localized_point in localized_points:
+        #     img_viz = cv.circle(img_viz, (PITCH.x_to_image(width, localized_point[0]), PITCH.y_to_image(height, localized_point[1])), 2, (0, 255, 0), 2)
         #cv.imshow("Detected Lines", img_lines)
         #cv.imshow("Homography", img_homography)
         #cv.imshow("Field Visualization", img_viz)
-        return localized_points, img_homography
+        return localized_points, img_lines
     return localized_points, None
 
 
