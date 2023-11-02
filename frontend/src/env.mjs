@@ -45,6 +45,9 @@ export const env = createEnv({
       "http://localhost:3000",
       "https://pytch.com",
     ]),
+    NEXT_PUBLIC_FLASK_URL: z.enum([
+      "http://127.0.0.1:8080",
+    ]),
   },
 
   /**
@@ -62,6 +65,7 @@ export const env = createEnv({
     NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
     NEXT_PUBLIC_AUTH0_ISSUER: process.env.NEXT_PUBLIC_AUTH0_ISSUER,
     NEXT_PUBLIC_WEB_URL: process.env.NEXT_PUBLIC_WEB_URL, 
+    NEXT_PUBLIC_FLASK_URL: process.env.NEXT_PUBLIC_FLASK_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -3,11 +3,8 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/app/_components/ui/card";
+import { env } from "@/env.mjs";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
@@ -17,13 +14,20 @@ function MyDropzone() {
       const formData = new FormData();
       formData.append("file", file);
 
-      fetch("/detect", {
+      fetch(env.NEXT_PUBLIC_FLASK_URL + "/detect", {
         method: "POST",
         body: formData,
       })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
+        .then((response) => {
+          return response.blob()})
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "vid.mp4"; // or any other extension
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -32,7 +36,7 @@ function MyDropzone() {
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
-      "video/*": [".mp4", ".flv"],
+      "video/*": [".mp4", ".avi", ".mkv"],
     },
     onDrop,
   });
@@ -116,11 +120,11 @@ export default function UploadPage() {
 
   const searchItems =
     filteredItems.length > 0 || text.length > 0 ? filteredItems : items;
-  console.log(searchItems);
 
   searchItems.forEach((item, index) => {
     itemList.push(
       <Card
+        key={index}
         style={{ backgroundImage: `url(${"/assets/newjeans.png"})` }}
         className="flex h-4/5 w-[335px] flex-none bg-gray-100"
       >

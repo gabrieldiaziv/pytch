@@ -2,6 +2,7 @@ from io import BytesIO
 import tempfile
 
 from flask import Flask, flash, request, redirect, send_file
+from flask_cors import CORS
 from PIL import Image
 import cv2
 import numpy as np
@@ -17,6 +18,7 @@ ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super secret key'
+CORS(app)
 
 model = Tracker(model_type='best.pt')
 

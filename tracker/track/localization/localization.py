@@ -3,7 +3,7 @@ from . import baseline_cameras
 from .camera import unproject_image_point
 import cv2 as cv
 import numpy as np
-from soccerpitch import SoccerPitch
+from .soccerpitch import SoccerPitch
 
 
 # Call this at the start of analyzing a video

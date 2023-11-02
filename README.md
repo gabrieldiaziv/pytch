@@ -13,3 +13,17 @@
   - view database: `npx prisma studio` or `pnpm prisma studio`
 
 - start frontend: `npm run dev` or `pnpm dev`
+
+## backend setup
+
+- `cd tracker`
+- `pip install cython`
+- `cd track`
+- `rm -rf ByteTrack`
+- `git clone git@github.com:ifzhang/ByteTrack.git --force`
+- `cd ByteTrack`
+- `python setup.py develop`
+- `pip install -r requirements.txt`
+- `cd ../..`
+- `pip install -r requirements.txt`
+- `flask --app app run -p 8080`
