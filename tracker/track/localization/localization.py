@@ -24,16 +24,16 @@ def get_pitch_locations(frame, points, network, test=False):
     localized_points = [unproject_image_point(inv_homography, point) for point in points]
     if test:
         img_viz = np.full((height, width, 3), 255, dtype=np.uint8)
-        img_lines = show_lines(frame, extremities)
+        #img_lines = show_lines(frame, extremities)
         img_homography = baseline_cameras.draw_pitch_homography(frame, homography)
-        img_viz = baseline_cameras.draw_detected_pitch_lines(img_viz, line_points, line_names, pitch)
+        #img_viz = baseline_cameras.draw_detected_pitch_lines(img_viz, line_points, line_names, pitch)
         for localized_point in localized_points:
             img_viz = cv.circle(img_viz, (pitch.x_to_image(width, localized_point[0]), pitch.y_to_image(height, localized_point[1])), 2, (0, 255, 0), 2)
-        cv.imshow("Detected Lines", img_lines)
-        cv.imshow("Homography", img_homography)
-        cv.imshow("Field Visualization", img_viz)
-        cv.waitKey(60000)
-    return localized_points
+        #cv.imshow("Detected Lines", img_lines)
+        #cv.imshow("Homography", img_homography)
+        #cv.imshow("Field Visualization", img_viz)
+        return localized_points, img_homography
+    return localized_points, None
 
 
 # Returns the image with the detected lines drawn and labeled
@@ -49,7 +49,7 @@ def show_lines(img, extremities):
 
 
 def main():
-    frame = cv.imread("03132.jpg")
+    frame = cv.imread("output_010.jpg")
     h, w, _ = frame.shape
     network = init_segmentation_network(w, h)
     print(get_pitch_locations(frame, [(480, 270, 1)], network, test=True))
