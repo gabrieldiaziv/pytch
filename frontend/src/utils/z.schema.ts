@@ -25,3 +25,22 @@ export const CompleteUploadSchema = z.object({
   eTags: z.array(z.string()),
 });
 export type CompleteUploadRequest = z.infer<typeof CompleteUploadSchema>;
+
+
+/**
+ * @see https://auth0.com/docs/secure/tokens/json-web-tokens/json-web-key-set-properties
+ */
+export const JWKSchema = z.object({
+  keys: z.array(
+    z.object({
+      alg: z.string(),
+      kty: z.string(),
+      use: z.string(),
+      n: z.string(),
+      e: z.string(),
+      kid: z.string(),
+      x5t: z.string(),
+      x5c: z.array(z.string()),
+    })
+  ),
+});
