@@ -1,6 +1,7 @@
 from io import BytesIO
 import tempfile
 import zipfile
+from dataclasses import asdict
 
 from flask import Flask, flash, request, redirect, send_file
 from flask_cors import CORS
@@ -8,8 +9,10 @@ from PIL import Image
 import cv2
 import numpy as np
 
+from track.types import Frame, Header, Match, Team
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
+from track.utils import detects_to_frame
 from track.video import VideoConfig
 from track.localization import localization
 
@@ -98,6 +101,7 @@ def detect_post():
 
         _, label_vid = tempfile.mkstemp(suffix=f".mp4")
         _, twod_vid = tempfile.mkstemp(suffix=f".mp4")
+        _, match_json = tempfile.mkstemp(suffix=f".json")
         
         label_writer = VideoConfig(
             fps=30,
@@ -111,6 +115,11 @@ def detect_post():
             height=1080,
         ).new_video(twod_vid)
 
+        match_writer = open(match_json, 'w')
+
+        frames: list[Frame] = []
+
+        i = 0
         for frame, detects, coords, extremities, line_names, line_points  in model.detect_video(upload_file):
             label_img = frame.copy()
             h, w, _ = frame.shape
@@ -120,16 +129,29 @@ def detect_post():
             label_img = localization.show_lines(label_img, extremities)
 
             twod_img = localization.twod_img(h, w, coords ,line_names, line_points)
+            frames.append(detects_to_frame(i, detects, coords))
 
+             
             label_writer.write(label_img)
             twod_writer.write(twod_img)
+            i += 1
 
 
+        m = Match(
+            header=Header(
+                team1=Team(id=1, name="Gabes team", color="#00000"),
+                team2=Team(id=2, name="Ryans team", color="#00000"),
+            ), match=frames)
+
+
+        match_writer.write(m.to_json())
         label_writer.release()
         twod_writer.release()
 
+        
         memory_file = BytesIO()
         with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                zipf.write(match_json)
                 zipf.write(label_vid)
                 zipf.write(twod_vid)
 

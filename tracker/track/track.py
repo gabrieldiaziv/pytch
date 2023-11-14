@@ -71,12 +71,11 @@ class Tracker:
             detections = self._match_detections(detections, tracks)
             frame_points = [detect.rect.bottom_center.xy + (1,) for detect in detections] 
             global_points = localization.get_pitch_locations(frame_points, inv_homography, test=True)
-            
+           
             output.append((frame, detections, global_points, extremities, line_names, line_points))
             i+=1
         return output
 
-    
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:
         detection_boxes = np.array([ d.box(False) for d in detects], dtype=float)
         tracks_boxes = np.array([ track.tlbr for track in tracks], dtype=float)
@@ -88,4 +87,3 @@ class Tracker:
             if iou[tracker_i, detect_i] != 0:
                 detects[detect_i].tracker_id = tracks[tracker_i].track_id
         return detects
-
