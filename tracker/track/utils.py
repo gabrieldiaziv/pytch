@@ -2,8 +2,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
+from analytics.types import Player, Ball, Frame
 import numpy as np
 
+PLAYER_BALL_PROXIMITY = 5.0
+
+Coord = tuple[float,float]
 
 @dataclass(frozen=True)
 class Point:
@@ -94,3 +98,63 @@ class Detection:
             self.rect.bottom_right.x,
             self.rect.bottom_right.y
         ]
+
+def filter_detections(detects: list[Detection], coords: list[Coord], class_name: str) -> list[tuple[Detection, Coord]]:
+    return list(filter(
+                lambda x: x[0].class_name == class_name,
+                zip(detects, coords)
+            ))
+    
+class DetectionClass:
+    Ball = "ball"
+    Player = "player"
+    Referee = "referre"
+    Goalkeeper = "goalkeeper"
+
+def get_player_in_possession(
+    player_detections: list[tuple[Detection,Coord]], 
+    ball_detections: list[tuple[Detection, Coord]],
+    proximity: float
+) -> Optional[int]:
+    if len(ball_detections) != 1:
+        return None
+    _, b_xy = ball_detections[0]
+    for player, p_xy in player_detections:
+        dist = ((p_xy[0] - b_xy[0]) ** 2 + (p_xy[1] - b_xy[1]) ** 2) ** 0.5
+        if dist < proximity:
+            return player.tracker_id
+
+def detects_to_frame(frame: int, detects: list[Detection], coords: list[Coord]) -> Frame:
+    
+    ball_detects = filter_detections(detects, coords, DetectionClass.Ball)
+    players_detects = filter_detections(detects, coords, DetectionClass.Player)
+
+    players = [ Player(x=coord[0], y=coord[1], id=p.tracker_id, team=1)
+        for p, coord in players_detects
+    ]
+
+    if len(ball_detects) == 0:
+        return Frame(
+            frame_id = frame,
+            players = players,
+            ball = None
+        )
+    _, b_coord = ball_detects[0]
+    player_in_poss = get_player_in_possession(players_detects, ball_detects, PLAYER_BALL_PROXIMITY)
+
+    return Frame(
+        frame_id = frame,
+        players = players,
+        ball = Ball(
+            x = b_coord[0],
+            y = b_coord[1],
+            player= player_in_poss,
+        )
+    )
+        
+   
+    
+
+
+
+

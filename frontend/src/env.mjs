@@ -39,8 +39,6 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_AUTH0_CLIENT_ID: z.string(),
-    NEXT_PUBLIC_AUTH0_ISSUER: z.string(),
     NEXT_PUBLIC_WEB_URL: z.enum([
       "http://localhost:3000",
       "https://pytch.com",
@@ -62,8 +60,6 @@ export const env = createEnv({
     AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
     AUTH0_CLIENT_SECRET: process.env.AUTH0_CLIENT_SECRET,
     AUTH0_ISSUER: process.env.AUTH0_ISSUER,
-    NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
-    NEXT_PUBLIC_AUTH0_ISSUER: process.env.NEXT_PUBLIC_AUTH0_ISSUER,
     NEXT_PUBLIC_WEB_URL: process.env.NEXT_PUBLIC_WEB_URL, 
     NEXT_PUBLIC_FLASK_URL: process.env.NEXT_PUBLIC_FLASK_URL,
   },

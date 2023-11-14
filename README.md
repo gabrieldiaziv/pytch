@@ -16,14 +16,14 @@
 
 ## backend setup
 
-- `cd tracker`
 - `pip install cython`
-- `cd track`
+- `cd tracker/track`
+- `python -m pip install --upgrade pip==22.0.4`
+- `pip install -r requirements.txt`
 - `rm -rf ByteTrack`
 - `git clone git@github.com:ifzhang/ByteTrack.git --force`
 - `cd ByteTrack`
+- `pip install -r requirements.txt`
 - `python setup.py develop`
-- `pip install -r requirements.txt`
 - `cd ../..`
-- `pip install -r requirements.txt`
 - `flask --app app run -p 8080`

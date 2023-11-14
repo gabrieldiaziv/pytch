@@ -79,7 +79,7 @@ class Tracker:
             detections, tracked_frames, tracked_colors = self._update_detected_colors(frame, detections, tracked_frames, tracked_colors)
             frame_points = [detect.rect.bottom_center.xy + (1,) for detect in detections] 
             global_points = localization.get_pitch_locations(frame_points, inv_homography, test=True)
-            
+           
             output.append((frame, detections, global_points, extremities, line_names, line_points))
             i+=1
         # get average colors for each tracked player
@@ -104,7 +104,6 @@ class Tracker:
 
         return output
 
-    
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:
         detection_boxes = np.array([ d.box(False) for d in detects], dtype=float)
         tracks_boxes = np.array([ track.tlbr for track in tracks], dtype=float)
@@ -116,7 +115,7 @@ class Tracker:
             if iou[tracker_i, detect_i] != 0:
                 detects[detect_i].tracker_id = tracks[tracker_i].track_id
         return detects
-    
+
     def _update_detected_colors(self, frame, detections, tracked_frames, tracked_colors):
         for detection in detections:
             if detection.class_name == "player" and detection.tracker_id != -1:
@@ -147,5 +146,3 @@ class Tracker:
                         else:
                             tracked_colors[detection.tracker_id][i][j] = percentages_and_centroids[i][1][j]
         return detections, tracked_frames, tracked_colors
-
-
