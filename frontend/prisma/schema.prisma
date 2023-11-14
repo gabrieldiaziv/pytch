@@ -109,6 +109,9 @@ model GameMatch {
     teamHome    Team?           @relation(fields: [teamid_home], references: [id], onDelete: SetNull, name: "teamHome")
     teamAway    Team?           @relation(fields: [teamid_away], references: [id], onDelete: SetNull, name: "teamAway")
     Viz         Viz[]
+    localization_video String?        @db.VarChar(250) // URL or path to the localization video
+    generated_video    String?        @db.VarChar(250) // URL or path to the generated video
+    thumbnail_url      String?        @db.VarChar(250) // URL or path to the thumbnail image
 
     @@index([user_id])
     @@index([teamid_home])
