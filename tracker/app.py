@@ -1,7 +1,8 @@
 from io import BytesIO
 import tempfile
 import zipfile
-from dataclasses import asdict
+import uuid
+
 
 from flask import Flask, flash, request, redirect, send_file
 from flask_cors import CORS
@@ -9,6 +10,7 @@ from PIL import Image
 import cv2
 import numpy as np
 
+from store.store import PytchStore
 from track.types import Frame, Header, Match, Team
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
@@ -24,7 +26,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super secret key'
 CORS(app)
 
-model = Tracker(model_type='best.pt')
+model = Tracker(model_type='best.pt') 
+store = PytchStore()
 
 base_annontator = BaseAnnotator(colors=COLORS, thickness=THICKNESS)
 text_annontator = TextAnnotator(background_color=(255, 255, 255), text_color=(0, 0, 0), text_thickness=2)
@@ -147,6 +150,11 @@ def detect_post():
         match_writer.write(m.to_json())
         label_writer.release()
         twod_writer.release()
+
+        urls = store.upload_data(
+            str(uuid.uuid4()),
+            label_vid, twod_vid, match_json
+        )
 
         
         memory_file = BytesIO()
