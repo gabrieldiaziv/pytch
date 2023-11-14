@@ -26,6 +26,7 @@ declare module "next-auth" {
       username: string;
       displayName: string;
     } & DefaultSession["user"];
+    idToken: string;
   }
 
   interface Profile extends Auth0Profile {
@@ -54,7 +55,7 @@ export const authOptions: NextAuthOptions = {
 
       return url;
     },
-    jwt: async ({ trigger, user, token, profile }) => {
+    jwt: async ({ trigger, user, token, profile, account }) => {
       if (trigger === "signUp") {
         // create new user in database
         await UserService.createUser(user.id, user.name ?? "");
@@ -75,6 +76,10 @@ export const authOptions: NextAuthOptions = {
             token.displayName = dbUser.display_name;
           }
         }
+
+        if (account) {
+          token.idToken = account.id_token;
+        }
       }
 
       return token;
@@ -89,6 +94,7 @@ export const authOptions: NextAuthOptions = {
           username: String(token.username),
           displayName: String(token.displayName),
         },
+        idToken: String(token.idToken),
       };
 
       return session;

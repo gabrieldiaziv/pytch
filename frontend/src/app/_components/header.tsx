@@ -26,6 +26,11 @@ const Header: React.FC = () => {
           </Link>
         </div>
         <div className="flex items-center gap-4 text-sm font-medium">
+          {session?.user ? (
+            <Link href="/upload" className="duration-300 hover:text-gray-500">
+              Upload
+            </Link>
+          ) : null}
           <Link href="/api-docs" className="duration-300 hover:text-gray-500">
             API
           </Link>
@@ -46,7 +51,6 @@ const Header: React.FC = () => {
               Sign In
             </Button>
           )}
-
           <ModeToggle />
         </div>
       </nav>

@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .types import Player, Ball, Frame
+from analytics.types import Player, Ball, Frame
 import numpy as np
 
 PLAYER_BALL_PROXIMITY = 5.0
