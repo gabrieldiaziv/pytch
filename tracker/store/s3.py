@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from mypy_boto3_s3.client import S3Client
 
 
-AWS_ACCESS_KEY  = 'AWS_ACCESS_KEY_ID'
-AWS_SECRET_KEY = 'AWS_SECRET_ACCESS_KEY'
+AWS_ACCESS_KEY  = 'AWS_ACCESS_KEY'
+AWS_SECRET_KEY = 'AWS_SECRET_KEY'
 AWS_BUCKET = 'AWS_BUCKET'
 
 @dataclass

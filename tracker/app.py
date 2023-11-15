@@ -10,7 +10,10 @@ from PIL import Image
 import cv2
 import numpy as np
 
-from store.store import PytchStore
+from dotenv import load_dotenv
+from store.db import PytchDB
+from store.s3 import PytchStore
+
 from track.types import Frame, Header, Match, Team
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
@@ -22,15 +25,21 @@ ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
 ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
 
+load_dotenv()
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super secret key'
 CORS(app)
 
 model = Tracker(model_type='best.pt') 
 store = PytchStore()
+db = PytchDB()
+
 
 base_annontator = BaseAnnotator(colors=COLORS, thickness=THICKNESS)
 text_annontator = TextAnnotator(background_color=(255, 255, 255), text_color=(0, 0, 0), text_thickness=2)
+
+TEST_MATCH_ID = "MATCH_ID_134"
 
 @app.route("/")
 def hello_world():
@@ -151,12 +160,7 @@ def detect_post():
         label_writer.release()
         twod_writer.release()
 
-        urls = store.upload_data(
-            str(uuid.uuid4()),
-            label_vid, twod_vid, match_json
-        )
 
-        
         memory_file = BytesIO()
         with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 zipf.write(match_json)
@@ -165,6 +169,21 @@ def detect_post():
 
         # Set the file pointer to the beginning of the file
         memory_file.seek(0)
+
+        urls = store.upload_data(
+            TEST_MATCH_ID, 
+            label_vid, twod_vid, match_json
+        )
+
+        db.update_match(
+           TEST_MATCH_ID,
+            urls.twod_url,
+            urls.label_url,
+            urls.match_url,
+            "here",
+        )
+        
+        
 
         # Send the zip file as an attachment
         return send_file(memory_file, download_name='files.zip', as_attachment=True)

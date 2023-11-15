@@ -1,7 +1,6 @@
 import os
 import sys
 import logging
-from datetime import datetime
 
 import mysql.connector as sql
 
@@ -29,5 +28,38 @@ class PytchDB:
             sys.exit(1)
             
                 
-    def insert_match(self, match_id: str, user_id: str, team_home: str, team_away: str, data: datetime):
+    def update_match(self, match_id: str, localization_url: str, label_url:str , match_url: str, thumbnail_url:str):
+        query = """
+        UPDATE GameMatch SET
+            localization_video = %s,
+            generated_video = %s,
+            match_json = %s,
+            thumbnail_url = %s
+        WHERE
+            match_id = %s
+        """
+
+        cursor = self._db.cursor()
+        cursor.execute(query,
+            [localization_url, label_url, match_url, thumbnail_url, match_id]
+        )
+        self._db.commit()
+        cursor.close()
+
+    def insert_viz(self, match_id: str, viz_name:str, viz_desc:str, viz_url: str):
+        query ="""
+        INSERT INTO Viz (match_id, name, desc, url)
+        VALUES
+            (%s, %s, %s, %s)
+        """
+
+        cursor=self._db.cursor()
+        cursor.execute(query,
+            [match_id, viz_name, viz_desc, viz_url]
+        )
+        self._db.commit()
+        cursor.close()
+
+
+
 
