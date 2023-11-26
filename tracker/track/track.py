@@ -96,13 +96,12 @@ class Tracker:
         kmeans = KMeans(n_clusters=2, n_init=10)
         s = kmeans.fit(second_avg_color)
         centroids = kmeans.cluster_centers_
-        print(centroids)
         teams = dict(zip([key for key in tracked_colors], s.labels_))
-        print("Teams:")
+        print("Teams: ")
         print(teams)
 
 
-        return output
+        return output, teams, ['#{:02x}{:02x}{:02x}'.format(int(centroids[0][0]), int(centroids[0][1]), int(centroids[0][2])), '#{:02x}{:02x}{:02x}'.format(int(centroids[1][0]), int(centroids[1][1]), int(centroids[1][2]))]
 
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:
         detection_boxes = np.array([ d.box(False) for d in detects], dtype=float)
@@ -124,8 +123,8 @@ class Tracker:
                 img_crop_rgb = cv.cvtColor(img_crop, cv.COLOR_BGR2RGB)
                 cv.imwrite("testing/%d_img.jpg" %(detection.tracker_id), img_crop)
                 img_crop_rgb = img_crop_rgb.reshape(img_crop_rgb.shape[1]*img_crop_rgb.shape[0], 3)
-                print("img crop")
-                print(img_crop_rgb)
+                #print("img crop")
+                #print(img_crop_rgb)
                 kmeans = KMeans(n_clusters=3, n_init=10)
                 s = kmeans.fit(img_crop_rgb)
                 labels = kmeans.labels_

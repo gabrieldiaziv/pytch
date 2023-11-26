@@ -36,6 +36,7 @@ class Team:
 class Header:
     team1: Team
     team2: Team
+    player_teams: dict[int]
     
 
 @dataclass_json
