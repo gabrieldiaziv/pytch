@@ -60,48 +60,48 @@ def verify_id_token():
     if request.method == 'OPTIONS':
         return None
 
-    print('verifying access token')
+#     print('verifying access token')
 
-    # get the access token from the Authorization header
-    auth_header = request.headers.get('Authorization', '')
-    if not auth_header:
-        return 'Authorization header expected', 401
-    id_token = auth_header.split()[1]
+#     # get the access token from the Authorization header
+#     auth_header = request.headers.get('Authorization', '')
+#     if not auth_header:
+#         return 'Authorization header expected', 401
+#     id_token = auth_header.split()[1]
 
-    # decode the headers of the JWT
-    token_headers = jwt.get_unverified_header(id_token)
-    if token_headers['alg'] != 'RS256':
-        return 'Invalid token headers', 401
+#     # decode the headers of the JWT
+#     token_headers = jwt.get_unverified_header(id_token)
+#     if token_headers['alg'] != 'RS256':
+#         return 'Invalid token headers', 401
 
-    # fetch the JWKS from Auth0
-    jwks_url = os.environ.get('AUTH0_ISSUER', '') + '/.well-known/jwks.json'
-    jwks = requests.get(jwks_url).json()
+#     # fetch the JWKS from Auth0
+#     jwks_url = os.environ.get('AUTH0_ISSUER', '') + '/.well-known/jwks.json'
+#     jwks = requests.get(jwks_url).json()
 
-    # find the matching JWK
-    matched_jwk = next(
-        (jwk for jwk in jwks['keys'] if jwk['kid'] == token_headers['kid']), None)
-    if not matched_jwk or 'x5c' not in matched_jwk:
-        return 'No JWK found', 401
+#     # find the matching JWK
+#     matched_jwk = next(
+#         (jwk for jwk in jwks['keys'] if jwk['kid'] == token_headers['kid']), None)
+#     if not matched_jwk or 'x5c' not in matched_jwk:
+#         return 'No JWK found', 401
 
-    # get the certificate from the JWK
-    certificate = '-----BEGIN CERTIFICATE-----\n' + \
-        matched_jwk['x5c'][0] + '\n-----END CERTIFICATE-----'
-    public_key = load_pem_x509_certificate(
-        certificate.encode(), default_backend()).public_key()
+#     # get the certificate from the JWK
+#     certificate = '-----BEGIN CERTIFICATE-----\n' + \
+#         matched_jwk['x5c'][0] + '\n-----END CERTIFICATE-----'
+#     public_key = load_pem_x509_certificate(
+#         certificate.encode(), default_backend()).public_key()
 
-    # verify the JWT
-    try:
-        jwt.decode(
-            id_token,
-            public_key,
-            audience=os.environ.get('AUTH0_CLIENT_ID', ''),
-            issuer=os.environ.get('AUTH0_ISSUER', '') + '/',
-            algorithms=['RS256']
-        )
-    except jwt.InvalidTokenError as e:
-        return 'Invalid token: ' + str(e), 401
+#     # verify the JWT
+#     try:
+#         jwt.decode(
+#             id_token,
+#             public_key,
+#             audience=os.environ.get('AUTH0_CLIENT_ID', ''),
+#             issuer=os.environ.get('AUTH0_ISSUER', '') + '/',
+#             algorithms=['RS256']
+#         )
+#     except jwt.InvalidTokenError as e:
+#         return 'Invalid token: ' + str(e), 401
 
-    print('access token verified')
+#     print('access token verified')
 
 
 TEST_MATCH_ID = "MATCH_ID_134"
@@ -202,7 +202,10 @@ def detect_post():
         frames: list[Frame] = []
 
         i = 0
-        for frame, detects, coords, extremities, line_names, line_points in model.detect_video(upload_file):
+
+        output, teams, colors = model.detect_video(upload_file)
+
+        for frame, detects, coords, extremities, line_names, line_points in output:
             label_img = frame.copy()
             h, w, _ = frame.shape
 
@@ -224,8 +227,9 @@ def detect_post():
 
         m = Match(
             header=Header(
-                team1=Team(id=1, name="Gabes team", color="#00000"),
-                team2=Team(id=2, name="Ryans team", color="#00000"),
+                team1=Team(id=0, name="Gabes team", color=colors[0]),
+                team2=Team(id=1, name="Ryans team", color=colors[1]),
+                player_teams=teams
             ), match=frames)
 
         match_writer.write(m.to_json())
