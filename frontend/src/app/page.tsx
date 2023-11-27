@@ -8,7 +8,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center">
-      <section className="relative flex h-[80vh] w-screen items-end justify-start">
+      <section className="relative flex h-[100vh] w-screen  items-center justify-start overflow-hidden">
         <video
           src="/assets/e6017ed8-a551-4d7e-b074-2d34c14df115.mp4"
           autoPlay

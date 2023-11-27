@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .types import Player, Ball, Frame
+from analytics.types import Player, Ball, Frame
 import numpy as np
 
 PLAYER_BALL_PROXIMITY = 5.0
@@ -129,7 +129,7 @@ def detects_to_frame(frame: int, detects: list[Detection], coords: list[Coord]) 
     ball_detects = filter_detections(detects, coords, DetectionClass.Ball)
     players_detects = filter_detections(detects, coords, DetectionClass.Player)
 
-    players = [ Player(x=coord[0], y=coord[1], id=p.tracker_id, team=1)
+    players = [ Player(x=coord[0], y=coord[1], id=p.tracker_id)
         for p, coord in players_detects
     ]
 

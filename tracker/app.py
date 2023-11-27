@@ -1,35 +1,45 @@
 from io import BytesIO
 import tempfile
 import zipfile
+from dataclasses import asdict
+import os
 import uuid
 
 
+from dotenv import load_dotenv
+import jwt
+import requests
 from flask import Flask, flash, request, redirect, send_file
 from flask_cors import CORS
 from PIL import Image
 import cv2
 import numpy as np
+from werkzeug.datastructures import FileStorage
+from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.backends import default_backend
 
+from analytics.types import Frame, Header, Match, Team
 from dotenv import load_dotenv
 from store.db import PytchDB
 from store.s3 import PytchStore
 
-from track.types import Frame, Header, Match, Team
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
 from track.utils import detects_to_frame
 from track.video import VideoConfig
 from track.localization import localization
 
+load_dotenv()  # load environment variables from .env file
+
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
-ALLOWED_EXTENSIONS =  ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
+ALLOWED_EXTENSIONS = ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
 
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'super secret key'
 CORS(app)
+app.config['SECRET_KEY'] = 'super secret key'
 
 model = Tracker(model_type='best.pt') 
 store = PytchStore()
@@ -37,7 +47,62 @@ db = PytchDB()
 
 
 base_annontator = BaseAnnotator(colors=COLORS, thickness=THICKNESS)
-text_annontator = TextAnnotator(background_color=(255, 255, 255), text_color=(0, 0, 0), text_thickness=2)
+text_annontator = TextAnnotator(background_color=(
+    255, 255, 255), text_color=(0, 0, 0), text_thickness=2)
+
+
+@app.before_request
+def verify_id_token():
+    # bypass verification for initial OPTIONS request
+    if os.getenv("DEVELOPMENT", "false") == "true":
+        return
+
+    if request.method == 'OPTIONS':
+        return None
+
+#     print('verifying access token')
+
+#     # get the access token from the Authorization header
+#     auth_header = request.headers.get('Authorization', '')
+#     if not auth_header:
+#         return 'Authorization header expected', 401
+#     id_token = auth_header.split()[1]
+
+#     # decode the headers of the JWT
+#     token_headers = jwt.get_unverified_header(id_token)
+#     if token_headers['alg'] != 'RS256':
+#         return 'Invalid token headers', 401
+
+#     # fetch the JWKS from Auth0
+#     jwks_url = os.environ.get('AUTH0_ISSUER', '') + '/.well-known/jwks.json'
+#     jwks = requests.get(jwks_url).json()
+
+#     # find the matching JWK
+#     matched_jwk = next(
+#         (jwk for jwk in jwks['keys'] if jwk['kid'] == token_headers['kid']), None)
+#     if not matched_jwk or 'x5c' not in matched_jwk:
+#         return 'No JWK found', 401
+
+#     # get the certificate from the JWK
+#     certificate = '-----BEGIN CERTIFICATE-----\n' + \
+#         matched_jwk['x5c'][0] + '\n-----END CERTIFICATE-----'
+#     public_key = load_pem_x509_certificate(
+#         certificate.encode(), default_backend()).public_key()
+
+#     # verify the JWT
+#     try:
+#         jwt.decode(
+#             id_token,
+#             public_key,
+#             audience=os.environ.get('AUTH0_CLIENT_ID', ''),
+#             issuer=os.environ.get('AUTH0_ISSUER', '') + '/',
+#             algorithms=['RS256']
+#         )
+#     except jwt.InvalidTokenError as e:
+#         return 'Invalid token: ' + str(e), 401
+
+#     print('access token verified')
+
 
 TEST_MATCH_ID = "MATCH_ID_134"
 
@@ -45,8 +110,10 @@ TEST_MATCH_ID = "MATCH_ID_134"
 def hello_world():
     return "<p>Hello, World!</p>"
 
+
 def file_ext(filename: str) -> str:
     return filename.rsplit('.', 1)[1].lower()
+
 
 def allowed_file(filename: str) -> bool:
     return "." in filename and file_ext(filename) in ALLOWED_EXTENSIONS
@@ -86,7 +153,8 @@ def detect_post():
         print('no file')
         return redirect(request.url)
     if not allowed_file(file.filename):
-        flash(f"filetype not supported. Use one of the following {ALLOWED_EXTENSIONS}")
+        flash(
+            f"filetype not supported. Use one of the following {ALLOWED_EXTENSIONS}")
         print('file not supported')
         return redirect(request.url)
 
@@ -98,7 +166,7 @@ def detect_post():
 
         detections = model.detect_image(img)
         label_img = base_annontator.annotate(img, detections)
-        
+
         image = Image.fromarray(label_img)
         img_io = BytesIO()
         image.save(img_io, 'PNG')
@@ -108,7 +176,8 @@ def detect_post():
         return send_file(img_io, mimetype='image/png')
 
     if file_ext(file.filename) in ALLOWED_VIDEO_EXTENSIONS:
-        _, upload_file = tempfile.mkstemp(suffix=f"{file.filename.rsplit('.', 1)[1].lower()}")
+        _, upload_file = tempfile.mkstemp(
+            suffix=f"{file.filename.rsplit('.', 1)[1].lower()}")
         file.save(upload_file)
 
         _, label_vid = tempfile.mkstemp(suffix=f".mp4")
@@ -133,7 +202,10 @@ def detect_post():
         frames: list[Frame] = []
 
         i = 0
-        for frame, detects, coords, extremities, line_names, line_points  in model.detect_video(upload_file):
+
+        output, teams, colors = model.detect_video(upload_file)
+
+        for frame, detects, coords, extremities, line_names, line_points in output:
             label_img = frame.copy()
             h, w, _ = frame.shape
 
@@ -141,7 +213,8 @@ def detect_post():
             label_img = text_annontator.annotate(label_img, detects, coords)
             label_img = localization.show_lines(label_img, extremities)
 
-            twod_img = localization.twod_img(h, w, coords ,line_names, line_points)
+            twod_img = localization.twod_img(
+                h, w, coords, line_names, line_points)
             frames.append(detects_to_frame(i, detects, coords))
 
              
@@ -152,14 +225,12 @@ def detect_post():
             twod_writer.write(twod_img)
             i += 1
 
-
-        
         m = Match(
             header=Header(
-                team1=Team(id=1, name="Gabes team", color="#00000"),
-                team2=Team(id=2, name="Ryans team", color="#00000"),
+                team1=Team(id=0, name="Gabes team", color=colors[0]),
+                team2=Team(id=1, name="Ryans team", color=colors[1]),
+                player_teams=teams
             ), match=frames)
-
 
         match_writer.write(m.to_json())
 
@@ -169,10 +240,10 @@ def detect_post():
 
         memory_file = BytesIO()
         with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                zipf.write(match_json)
-                zipf.write(label_vid)
-                zipf.write(twod_vid)
-                zipf.write(thumbnail)
+            zipf.write(match_json)
+            zipf.write(label_vid)
+            zipf.write(twod_vid)
+            zipf.write(thumbnail)
 
         # Set the file pointer to the beginning of the file
         memory_file.seek(0)
@@ -196,6 +267,3 @@ def detect_post():
         return send_file(memory_file, download_name='files.zip', as_attachment=True)
 
     return 'Invalid Request'
-        
-        
-

@@ -15,7 +15,6 @@ class Player:
     x: float
     y: float
     id: Optional[int]
-    team: int
 
 @dataclass_json
 @dataclass
@@ -36,6 +35,7 @@ class Team:
 class Header:
     team1: Team
     team2: Team
+    player_teams: dict[str]
     
 
 @dataclass_json
