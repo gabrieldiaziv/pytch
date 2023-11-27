@@ -36,12 +36,6 @@ services:
     networks:
       - mysql-net
 
-  s3mock:
-    image: adobe/s3mock:3.1.0
-    environment:
-      - initialBuckets=bucket1
-    ports:
-      - 9090:9090 
 
   tracer:
     depends_on:

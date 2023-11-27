@@ -15,6 +15,7 @@ class UploadResult:
     label_url: str
     twod_url: str
     match_url: str
+    thumbnail_url: str
 
 class PytchStore:
     def __init__(self):
@@ -42,8 +43,9 @@ class PytchStore:
                 ExpiresIn=31536000
             )
 
-    def upload_data(self, match_id: str, label_video_path:str, twod_video_path:str, match_json_path: str):
+    def upload_data(self, match_id: str, label_video_path:str, twod_video_path:str, match_json_path: str, thumbnail_path: str):
         return UploadResult(
+            thumbnail_url=self._upload(thumbnail_path, f'{match_id}-thumbnail.png'),
             label_url=self._upload(label_video_path, f'{match_id}-label.mp4'),
             twod_url=self._upload(twod_video_path, f'{match_id}-2d.mp4' ),
             match_url=self._upload(match_json_path, f'{match_id}-data.json'),

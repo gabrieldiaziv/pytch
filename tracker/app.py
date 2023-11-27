@@ -114,6 +114,7 @@ def detect_post():
         _, label_vid = tempfile.mkstemp(suffix=f".mp4")
         _, twod_vid = tempfile.mkstemp(suffix=f".mp4")
         _, match_json = tempfile.mkstemp(suffix=f".json")
+        _, thumbnail = tempfile.mkstemp(suffix=f".jpg")
         
         label_writer = VideoConfig(
             fps=30,
@@ -144,11 +145,15 @@ def detect_post():
             frames.append(detects_to_frame(i, detects, coords))
 
              
+            if i == 0:
+                cv2.imwrite(thumbnail, label_img)
+
             label_writer.write(label_img)
             twod_writer.write(twod_img)
             i += 1
 
 
+        
         m = Match(
             header=Header(
                 team1=Team(id=1, name="Gabes team", color="#00000"),
@@ -157,22 +162,24 @@ def detect_post():
 
 
         match_writer.write(m.to_json())
+
+        match_writer.close()
         label_writer.release()
         twod_writer.release()
-
 
         memory_file = BytesIO()
         with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 zipf.write(match_json)
                 zipf.write(label_vid)
                 zipf.write(twod_vid)
+                zipf.write(thumbnail)
 
         # Set the file pointer to the beginning of the file
         memory_file.seek(0)
 
         urls = store.upload_data(
             TEST_MATCH_ID, 
-            label_vid, twod_vid, match_json
+            label_vid, twod_vid, match_json, thumbnail
         )
 
         db.update_match(
@@ -180,7 +187,7 @@ def detect_post():
             urls.twod_url,
             urls.label_url,
             urls.match_url,
-            "here",
+            urls.thumbnail_url,
         )
         
         
@@ -189,9 +196,6 @@ def detect_post():
         return send_file(memory_file, download_name='files.zip', as_attachment=True)
 
     return 'Invalid Request'
-
-            
-
         
         
 
