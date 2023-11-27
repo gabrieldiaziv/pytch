@@ -28,7 +28,7 @@ export default function MatchPage({ params }: { params: { id: string } }) {
             {match ? (
               <div>
                 <h1 className="text-3xl font-semibold">{match.name}</h1>
-                <video className="aspect-video w-[300px]" controls>
+                <video className="aspect-video w-[500px]" autoPlay loop muted>
                   <source src={match.localization_video} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
