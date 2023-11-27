@@ -3,17 +3,18 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth";
 
-import {
-  Card,
-  CardContent,
-} from "@/app/_components/ui/card";
+import { Card, CardContent } from "@/app/_components/ui/card";
 
 import axios from "axios";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
 const formatDate = (dateString: string): string => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
@@ -35,31 +36,33 @@ export default function UserPage() {
   }, []); // Empty dependency array ensures this runs once on mount
 
   return (
-    <div className="flex flex-col w-full h-[100svh]">
-      <div className="flex w-full h-[10%]">
-
-      </div>
-      <div className="flex w-full h-[90%]">
-        <div className="flex flex-col w-full h-1/2 p-4 gap-6">
+    <div className="flex h-[100svh] w-full flex-col">
+      <div className="flex h-[10%] w-full"></div>
+      <div className="flex h-[90%] w-full">
+        <div className="flex h-1/2 w-full flex-col gap-6 p-4">
           <h1 className="text-3xl font-semibold">Dashboard</h1>
           <div>
-          {matches.map((match, index) => (
-            <Link
-              href={`/dashboard/${match.match.match_id}`}
-              key={index}
-              style={{ backgroundImage: `url(${match.match.thumbnail_url})` }}
-              className="flex aspect-video w-1/3 bg-cover bg-gray-100 rounded-lg duration-300 hover:scale-[101%]"
-            >
-              <div className="self-end p-2 text-white flex flex-col gap-1">
-                <h1 className="font-bold text-2xl">{match.match.name}</h1>
-                <p className="text-sm">{match.match.teamid_home} vs. {match.match.teamid_away}</p>
-                <p className="text-sm">{formatDate(match.match.date)}</p>
-              </div>
-            </Link>
+            {matches.map((match, index) => (
+              <Link
+                href={`/dashboard/${match.match.match_id}`}
+                key={index}
+                style={{ backgroundImage: `url(${match.match.thumbnail_url})` }}
+                className="relative flex aspect-video w-full overflow-hidden rounded-lg bg-gray-800 bg-cover duration-300 hover:scale-[101%] md:w-1/2 lg:w-1/3"
+              >
+                <div className="z-10 flex flex-col gap-1 self-end p-4 text-white">
+                  <h1 className="text-3xl font-bold">{match.match.name}</h1>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-lg">
+                      {match.match.teamid_home} vs. {match.match.teamid_away}
+                    </p>
+                    <p className="text-xs">{formatDate(match.match.date)}</p>
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent opacity-90"></div>
+              </Link>
             ))}
           </div>
-          <div className="flex h-full">
-          </div>
+          <div className="flex h-full"></div>
         </div>
       </div>
     </div>
