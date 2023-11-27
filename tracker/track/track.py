@@ -96,9 +96,9 @@ class Tracker:
         kmeans = KMeans(n_clusters=2, n_init=10)
         s = kmeans.fit(second_avg_color)
         centroids = kmeans.cluster_centers_
-        teams = dict(zip([key for key in tracked_colors], s.labels_))
-        print("Teams: ")
-        print(teams)
+        labels = s.labels_
+        labels = [str(x) for x in labels]
+        teams = dict(zip([key for key in tracked_colors], labels))
 
 
         return output, teams, ['#{:02x}{:02x}{:02x}'.format(int(centroids[0][0]), int(centroids[0][1]), int(centroids[0][2])), '#{:02x}{:02x}{:02x}'.format(int(centroids[1][0]), int(centroids[1][1]), int(centroids[1][2]))]
