@@ -66,7 +66,7 @@ opencv-python-headless==4.8.1.78
 packaging==23.2
 pandas==2.1.1
 Pillow==10.0.1
-protobuf==4.23.4
+protobuf==4.21.1
 psutil==5.9.6
 py-cpuinfo==9.0.0
 pyasn1==0.5.0

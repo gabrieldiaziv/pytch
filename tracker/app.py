@@ -3,6 +3,8 @@ import tempfile
 import zipfile
 from dataclasses import asdict
 import os
+import uuid
+
 
 from dotenv import load_dotenv
 import jwt
@@ -17,6 +19,10 @@ from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
 
 from analytics.types import Frame, Header, Match, Team
+from dotenv import load_dotenv
+from store.db import PytchDB
+from store.s3 import PytchStore
+
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
 from track.utils import detects_to_frame
@@ -24,15 +30,21 @@ from track.video import VideoConfig
 from track.localization import localization
 
 load_dotenv()  # load environment variables from .env file
+
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
 ALLOWED_EXTENSIONS = ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'super secret key'
 
-model = Tracker(model_type='best.pt')
+model = Tracker(model_type='best.pt') 
+store = PytchStore()
+db = PytchDB()
+
 
 base_annontator = BaseAnnotator(colors=COLORS, thickness=THICKNESS)
 text_annontator = TextAnnotator(background_color=(
@@ -42,6 +54,9 @@ text_annontator = TextAnnotator(background_color=(
 @app.before_request
 def verify_id_token():
     # bypass verification for initial OPTIONS request
+    if os.getenv("DEVELOPMENT", "false") == "true":
+        return
+
     if request.method == 'OPTIONS':
         return None
 
@@ -89,7 +104,9 @@ def verify_id_token():
     print('access token verified')
 
 
-@app.route("/", methods=["GET"])
+TEST_MATCH_ID = "MATCH_ID_134"
+
+@app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 
@@ -166,7 +183,8 @@ def detect_post():
         _, label_vid = tempfile.mkstemp(suffix=f".mp4")
         _, twod_vid = tempfile.mkstemp(suffix=f".mp4")
         _, match_json = tempfile.mkstemp(suffix=f".json")
-
+        _, thumbnail = tempfile.mkstemp(suffix=f".jpg")
+        
         label_writer = VideoConfig(
             fps=30,
             width=1920,
@@ -196,6 +214,10 @@ def detect_post():
                 h, w, coords, line_names, line_points)
             frames.append(detects_to_frame(i, detects, coords))
 
+             
+            if i == 0:
+                cv2.imwrite(thumbnail, label_img)
+
             label_writer.write(label_img)
             twod_writer.write(twod_img)
             i += 1
@@ -207,6 +229,8 @@ def detect_post():
             ), match=frames)
 
         match_writer.write(m.to_json())
+
+        match_writer.close()
         label_writer.release()
         twod_writer.release()
 
@@ -215,9 +239,25 @@ def detect_post():
             zipf.write(match_json)
             zipf.write(label_vid)
             zipf.write(twod_vid)
+            zipf.write(thumbnail)
 
         # Set the file pointer to the beginning of the file
         memory_file.seek(0)
+
+        urls = store.upload_data(
+            TEST_MATCH_ID, 
+            label_vid, twod_vid, match_json, thumbnail
+        )
+
+        db.update_match(
+           TEST_MATCH_ID,
+            urls.twod_url,
+            urls.label_url,
+            urls.match_url,
+            urls.thumbnail_url,
+        )
+        
+        
 
         # Send the zip file as an attachment
         return send_file(memory_file, download_name='files.zip', as_attachment=True)
