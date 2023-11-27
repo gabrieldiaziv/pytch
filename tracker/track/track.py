@@ -53,7 +53,7 @@ class Tracker:
 
         return detections 
 
-    def detect_video(self, vid_path:str) -> list[tuple[np.ndarray, list[Detection], list[tuple[float, float]], dict, list, list]]:
+    def detect_video(self, vid_path:str) -> tuple[list[tuple[np.ndarray, list[Detection], list[tuple[float, float]], dict, list, list]], dict, list] :
         i = 0
         output = []
         inv_homography = np.eye(3)
@@ -100,8 +100,8 @@ class Tracker:
         labels = [str(x) for x in labels]
         teams = dict(zip([key for key in tracked_colors], labels))
 
-
-        return output, teams, ['#{:02x}{:02x}{:02x}'.format(int(centroids[0][0]), int(centroids[0][1]), int(centroids[0][2])), '#{:02x}{:02x}{:02x}'.format(int(centroids[1][0]), int(centroids[1][1]), int(centroids[1][2]))]
+        colors = ['#{:02x}{:02x}{:02x}'.format(int(centroids[0][0]), int(centroids[0][1]), int(centroids[0][2])), '#{:02x}{:02x}{:02x}'.format(int(centroids[1][0]), int(centroids[1][1]), int(centroids[1][2]))]
+        return output, teams, colors
 
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:
         detection_boxes = np.array([ d.box(False) for d in detects], dtype=float)

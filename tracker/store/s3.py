@@ -17,6 +17,10 @@ class UploadResult:
     match_url: str
     thumbnail_url: str
 
+@dataclass
+class VizResult:
+    viz_url: str
+
 class PytchStore:
     def __init__(self):
         access_key = os.getenv(AWS_ACCESS_KEY)
@@ -37,6 +41,7 @@ class PytchStore:
                file_path, self.bucket, obj
             )
 
+
             return self.client.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': self.bucket, 'Key': obj},
@@ -49,6 +54,11 @@ class PytchStore:
             label_url=self._upload(label_video_path, f'{match_id}-label.mp4'),
             twod_url=self._upload(twod_video_path, f'{match_id}-2d.mp4' ),
             match_url=self._upload(match_json_path, f'{match_id}-data.json'),
+        )
+
+    def upload_viz(self, match_id: str, viz_type: str, viz_path: str):
+        return VizResult(
+            viz_url=self._upload(viz_path, f'{match_id}-{viz_type}.html')
         )
 
 
