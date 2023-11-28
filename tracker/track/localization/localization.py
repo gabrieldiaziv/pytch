@@ -19,6 +19,8 @@ def get_homography(frame, network):
     height, width, _ = frame.shape
     extremities = detect_extremities.analyze_frame(frame, network)
     success, homography, line_names, line_points = baseline_cameras.homography_from_extremities(extremities, width, height)
+    if not success:
+        return None
     inv_homography = np.linalg.inv(homography)
     return inv_homography, extremities, line_names, line_points
 

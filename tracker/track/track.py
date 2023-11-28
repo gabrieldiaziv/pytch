@@ -58,15 +58,20 @@ class Tracker:
         output = []
         inv_homography = np.eye(3)
         extremities = dict()
+        valid_homography = False
         line_names = []
         line_points = []
+        global_points = []
         tracked_frames = dict()
         tracked_colors = defaultdict(lambda: [[0 for _ in range(3)] for _ in range(3)])
 
 
         for frame in generate_frames(vid_path):
             if i % self.homography_rate ==0:
-                inv_homography, extremities, line_names, line_points = localization.get_homography(frame, self.localizer)
+                res = localization.get_homography(frame, self.localizer)
+                if res is not None:
+                    valid_homography = True
+                    inv_homography, extremities, line_names, line_points = res
                 
             detections = self.detect_image(frame)
             tracks = self.byte_tracker.update(
@@ -77,8 +82,10 @@ class Tracker:
 
             detections = self._match_detections(detections, tracks)
             detections, tracked_frames, tracked_colors = self._update_detected_colors(frame, detections, tracked_frames, tracked_colors)
+
             frame_points = [detect.rect.bottom_center.xy + (1,) for detect in detections] 
-            global_points = localization.get_pitch_locations(frame_points, inv_homography, test=True)
+            if valid_homography:
+                global_points = localization.get_pitch_locations(frame_points, inv_homography, test=True)
            
             output.append((frame, detections, global_points, extremities, line_names, line_points))
             i+=1
@@ -89,8 +96,8 @@ class Tracker:
                 for i in range(3):
                     centroid[i] /= tracked_frames[key]
                 centroid_bgr = (centroid[2], centroid[1], centroid[0])
-                solid_img = np.full((100, 100, 3), centroid_bgr, dtype=np.uint8)
-                cv.imwrite("testing/%d_color_%d.jpg"%(key,index),solid_img)
+                # solid_img = np.full((100, 100, 3), centroid_bgr, dtype=np.uint8)
+                # cv.imwrite("testing/%d_color_%d.jpg"%(key,index),solid_img)
                 index += 1
         second_avg_color = [tracked_colors[key][1] for key in tracked_colors]
         kmeans = KMeans(n_clusters=2, n_init=10)
@@ -121,7 +128,7 @@ class Tracker:
                 box = detection.box(False)
                 img_crop = frame[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
                 img_crop_rgb = cv.cvtColor(img_crop, cv.COLOR_BGR2RGB)
-                cv.imwrite("testing/%d_img.jpg" %(detection.tracker_id), img_crop)
+                # cv.imwrite("testing/%d_img.jpg" %(detection.tracker_id), img_crop)
                 img_crop_rgb = img_crop_rgb.reshape(img_crop_rgb.shape[1]*img_crop_rgb.shape[0], 3)
                 #print("img crop")
                 #print(img_crop_rgb)

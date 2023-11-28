@@ -190,3 +190,4 @@ def homography_from_extremities(predictions, width, height):
         if success:
             return True, homography, line_names, line_points
         return False, homography, line_names, line_points
+    return False, np.array([]), [], []
