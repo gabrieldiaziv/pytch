@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import uuid
 
 import mysql.connector as sql
 
@@ -48,14 +49,14 @@ class PytchDB:
 
     def insert_viz(self, match_id: str, viz_name:str, viz_desc:str, viz_url: str):
         query ="""
-        INSERT INTO Viz (match_id, name, desc, url)
+        INSERT INTO Viz (viz_id, match_id, name, descr, url)
         VALUES
-            (%s, %s, %s, %s)
+            (%s, %s, %s, %s, %s)
         """
 
         cursor=self._db.cursor()
         cursor.execute(query,
-            [match_id, viz_name, viz_desc, viz_url]
+            [str(uuid.uuid4()), match_id, viz_name, viz_desc, viz_url]
         )
         self._db.commit()
         cursor.close()

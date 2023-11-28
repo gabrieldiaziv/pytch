@@ -35,7 +35,7 @@ class Team:
 class Header:
     team1: Team
     team2: Team
-    player_teams: dict[str, str]
+    player_teams: dict[int, str]
     
 
 @dataclass_json

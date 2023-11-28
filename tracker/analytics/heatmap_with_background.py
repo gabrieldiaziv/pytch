@@ -15,7 +15,6 @@ class heatmap(Viz):
         return 'density heatmap of both teams players'
     
     def generate(self, match: Match) -> go.Figure:
-        soccer_filed_img = 'soccer_field_image.png'
         
 
         # Extract the mapping of player IDs to teams and match frames
@@ -28,9 +27,8 @@ class heatmap(Viz):
         # Iterate over each frame and each player to extract position and team
         for frame in match_frames:
             for player in frame.players:
-                player_id = str(player.id)  # Ensure player_id is a string for dictionary lookup
-                if player_id in player_teams:
-                    team = 'Team 1' if player_teams[player_id] == "0" else 'Team 2'
+                if player.id in player_teams:
+                    team = match.header.team1.name if player_teams[player.id] == "0" else match.header.team2.name
                     player_data.append({'x': player.x, 'y': player.y, 'team': team})
 
         # Convert list of dictionaries to DataFrame
@@ -51,7 +49,7 @@ class heatmap(Viz):
         # Add the image as a background
 
         bg_img = dict(
-            # source=img,
+            source=Viz.background(),
             xref="x",
             yref="y",
             x=-53,  # Adjust these values based on your field's dimensions and scale

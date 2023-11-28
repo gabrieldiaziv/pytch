@@ -9,6 +9,11 @@ import plotly.graph_objects as go
 
 
 class Viz(ABC):
+
+    @classmethod
+    def background(cls) -> str:
+        return "https://pytchtestbucket.s3.amazonaws.com/soccer_field_image.png"
+
     @property
     @abstractmethod
     def name(self)->str:
