@@ -32,6 +32,7 @@ from track.track import Tracker
 from track.utils import detects_to_frame
 from track.video import VideoConfig
 from track.localization import localization
+from analytics.heatmap_with_background import heatmap
 
 load_dotenv()  # load environment variables from .env file
 
@@ -44,7 +45,7 @@ CORS(app)
 app.config['SECRET_KEY'] = 'super secret key'
 
 model = Tracker(model_type='best.pt') 
-engine = Engine()
+engine = Engine(vizs=[heatmap()])
 store = PytchStore()
 db = PytchDB()
 
@@ -203,11 +204,11 @@ def detect_post():
         _, thumbnail = tempfile.mkstemp(suffix=f".jpg")
 
         
-        req: Optional[DetectParams] = None
-        try:
-            req = DetectParams(**request.get_json())
-        except ValidationError as e:
-           return e.errors()
+        req: Optional[DetectParams] = DetectParams(match_id='MATCH_ID_134', team1='gabe', team2='ryan')
+        # try:
+        #     req = DetectParams(**request.get_json())
+        # except ValidationError as e:
+        #    return e.errors()
 
         label_writer = VideoConfig(
             fps=30,

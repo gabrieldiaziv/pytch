@@ -9,10 +9,13 @@ import plotly.graph_objects as go
 
 
 class Viz(ABC):
-    @abstractproperty
+    @property
+    @abstractmethod
     def name(self)->str:
         ...
-    @abstractproperty
+
+    @property
+    @abstractmethod
     def description(self)->str:
         ...
 
@@ -28,8 +31,8 @@ class VizResult:
 
 
 class Engine:
-    def __init__(self):
-        self.vizs : list[Viz] = [] 
+    def __init__(self, vizs: list[Viz]):
+        self.vizs = vizs
 
     def compute(self, match: Match) -> list[VizResult]:
         viz_paths = []
