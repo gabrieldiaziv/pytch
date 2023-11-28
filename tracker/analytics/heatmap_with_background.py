@@ -32,7 +32,6 @@ class heatmap(Viz):
                     player_data.append({'x': player.x, 'y': player.y, 'team': team})
 
         # Convert list of dictionaries to DataFrame
-        print(player_data)
         df = pd.DataFrame(player_data)
 
 
