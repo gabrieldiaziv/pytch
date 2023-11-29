@@ -38,7 +38,7 @@ class heatmap(Viz):
 
         # Create density heatmaps for each team
         fig = px.density_heatmap(df, x='x', y='y', facet_col='team', nbinsx=30, nbinsy=30, 
-                                title='Player Position Density Heatmap', marginal_x='violin', 
+                                title='Player Position Density Heatmap',  
                                 range_x=[-53, 53], range_y=[-34, 34])
 
         fig.update_traces(opacity=0.7)
