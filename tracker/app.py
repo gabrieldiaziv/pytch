@@ -108,7 +108,6 @@ def verify_id_token():
 #     print('access token verified')
 
 
-TEST_MATCH_ID = "MATCH_ID_134"
 
 @app.route("/")
 def hello_world():
@@ -204,7 +203,9 @@ def detect_post():
         _, thumbnail = tempfile.mkstemp(suffix=f".jpg")
 
         
-        req: Optional[DetectParams] = DetectParams(match_id='MATCH_ID_134', team1='gabe', team2='ryan')
+        req: Optional[DetectParams] = DetectParams(match_id=str(uuid.uuid4()), team1='gabe', team2='ryan')
+        ### TODO: REMOVE THE FOLLOWING LINE: 
+        db.insert_match(req.match_id)
         # try:
         #     req = DetectParams(**request.get_json())
         # except ValidationError as e:
