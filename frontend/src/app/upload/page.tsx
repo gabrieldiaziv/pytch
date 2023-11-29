@@ -115,7 +115,7 @@ export default function UploadPage() {
   const [team2Name, setTeam2Name] = useState("");
   const [matchName, setMatchName] = useState("");
 
-  const allFieldsFilled = team1Name && team2Name && matchName;
+  const allFieldsFilled = team1Name && team2Name && matchName ? true : false;
 
   return (
     <div className="flex h-[100svh] w-full flex-col">
