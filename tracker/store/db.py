@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+import uuid
+from datetime import datetime
 
 import mysql.connector as sql
 
@@ -27,7 +29,21 @@ class PytchDB:
             logging.fatal("could not connect to db")
             sys.exit(1)
             
-                
+    def insert_match(self, match_id: str):
+        query = """
+        INSERT INTO GameMatch
+            (match_id, user_id, name, date)
+        VALUES 
+            (%s, %s, %s, %s)
+        """
+        cursor = self._db.cursor()
+        cursor.execute(query,
+            [match_id, 1, "My Test Match", datetime.now()]
+        )
+        self._db.commit()
+        cursor.close()
+
+
     def update_match(self, match_id: str, localization_url: str, label_url:str , match_url: str, thumbnail_url:str):
         query = """
         UPDATE GameMatch SET
@@ -48,14 +64,14 @@ class PytchDB:
 
     def insert_viz(self, match_id: str, viz_name:str, viz_desc:str, viz_url: str):
         query ="""
-        INSERT INTO Viz (match_id, name, desc, url)
+        INSERT INTO Viz (viz_id, match_id, name, descr, url)
         VALUES
-            (%s, %s, %s, %s)
+            (%s, %s, %s, %s, %s)
         """
 
         cursor=self._db.cursor()
         cursor.execute(query,
-            [match_id, viz_name, viz_desc, viz_url]
+            [str(uuid.uuid4()), match_id, viz_name, viz_desc, viz_url]
         )
         self._db.commit()
         cursor.close()
