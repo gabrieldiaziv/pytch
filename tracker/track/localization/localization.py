@@ -40,7 +40,12 @@ def twod_img( height, width, localized_points,line_names, line_points):
 
     img = baseline_cameras.draw_detected_pitch_lines(img, line_points, line_names, PITCH)
     for localized_point in localized_points:
-        img = cv.circle(img, (PITCH.x_to_image(width, localized_point[0]), PITCH.y_to_image(height, localized_point[1])), 6, (0, 255, 0), 6)
+        x_image = PITCH.x_to_image(width, localized_point[0])
+        y_image = PITCH.y_to_image(height, localized_point[1])
+        if (x_image < 0 or x_image > width) or (y_image < 0 or y_image > height):
+            print("Couldn't draw localized point: Out of bounds")
+        else:
+            img = cv.circle(img, (PITCH.x_to_image(width, localized_point[0]), PITCH.y_to_image(height, localized_point[1])), 6, (0, 255, 0), 6)
     return img
 
 # Returns the image with the detected lines drawn and labeled
