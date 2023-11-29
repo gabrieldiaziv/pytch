@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { Button } from "@/app/_components/ui/button";
+import { api } from "@/trpc/react";
 
 const formatDate = (dateString: string): string => {
   const options: Intl.DateTimeFormatOptions = {
@@ -13,8 +14,44 @@ const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
+const CustomFrame = ({ url }: { url: string }) => {
+  const [frameContent, setFrameContent] = useState('');
+
+  useEffect(() => {
+    const fetchHtmlContent = async () => {
+      try {
+        const response = await fetch(url);
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const textContent = await new Response(blob).text();
+          setFrameContent(textContent);
+        } else {
+          console.error('Failed to fetch HTML content:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching HTML content:', error);
+      }
+    };
+
+    fetchHtmlContent();
+  }, []);
+
+  return (
+    <div>
+      <iframe
+        title="test"
+        srcDoc={frameContent}
+        width="100%"
+        height="400px"
+      ></iframe>
+    </div>
+  );
+};
+
 export default function MatchPage({ params }: { params: { id: string } }) {
   const [match, setMatch] = useState<any>(null); // State to store match data
+  const vizs = api.match.getVizs.useQuery({ matchId: params.id });
 
   useEffect(() => {
     async function fetchData() {
@@ -52,7 +89,7 @@ export default function MatchPage({ params }: { params: { id: string } }) {
 
                 <div className="flex w-full gap-3 max-md:flex-col">
                   <div className="flex w-full flex-col gap-2 md:w-1/2">
-                    <h2 className="font-bold">Labelled Video</h2>
+                    <h2 className="font-bold">Labeled Video</h2>
                     <video
                       className="aspect-video w-full overflow-hidden rounded-lg"
                       autoPlay
@@ -83,6 +120,27 @@ export default function MatchPage({ params }: { params: { id: string } }) {
                       {/* <source src={match.localization_video} type="video/mp4" /> */}
                       <p>Your browser does not support the video tag.</p>
                     </video>
+                  </div>
+                </div>
+
+                <div className="flex h-full w-full gap-3 max-md:flex-col">
+                  <div className="flex w-3/4 flex-col rounded-lg border border-neutral-200 ">
+                    {vizs.data ? (
+                      <div>
+                        {vizs.data.map((match, index) => (
+                          <div>
+                            <h1>{match.name}</h1>
+                            <h2>{match.descr}</h2>
+                            <CustomFrame url={match.url}/>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div>getting matches</div>
+                    )}
+                  </div>
+                  <div className="flex w-1/4 flex-col rounded-lg border border-neutral-200 ">
+                    data dump button here ?
                   </div>
                 </div>
               </div> // Safely access match properties
