@@ -1,5 +1,6 @@
 from io import BytesIO
 import tempfile
+from typing import Optional
 import zipfile
 from dataclasses import asdict
 import os
@@ -17,6 +18,9 @@ import numpy as np
 from werkzeug.datastructures import FileStorage
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.backends import default_backend
+from pydantic import BaseModel, ValidationError
+from flask_pydantic import validate
+from analytics.engine import Engine
 
 from analytics.types import Frame, Header, Match, Team
 from dotenv import load_dotenv
@@ -28,6 +32,7 @@ from track.track import Tracker
 from track.utils import detects_to_frame
 from track.video import VideoConfig
 from track.localization import localization
+from analytics.heatmap_with_background import heatmap
 
 load_dotenv()  # load environment variables from .env file
 
@@ -35,13 +40,12 @@ ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mkv'}
 ALLOWED_EXTENSIONS = ALLOWED_VIDEO_EXTENSIONS | ALLOWED_IMAGE_EXTENSIONS
 
-load_dotenv()
-
 app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'super secret key'
 
 model = Tracker(model_type='best.pt') 
+engine = Engine(vizs=[heatmap()])
 store = PytchStore()
 db = PytchDB()
 
@@ -104,7 +108,6 @@ def verify_id_token():
 #     print('access token verified')
 
 
-TEST_MATCH_ID = "MATCH_ID_134"
 
 @app.route("/")
 def hello_world():
@@ -117,6 +120,19 @@ def file_ext(filename: str) -> str:
 
 def allowed_file(filename: str) -> bool:
     return "." in filename and file_ext(filename) in ALLOWED_EXTENSIONS
+
+
+class DetectParams(BaseModel):
+    match_id: str
+    team1: str
+    team2: str
+
+    class Config:
+        fields = {
+            'match_id': 'match_id',
+            'team1' : 'team_1',
+            'team2' : 'team_2'
+        }
 
 
 @app.route("/detect", methods=["GET", "POST"])
@@ -176,6 +192,7 @@ def detect_post():
         return send_file(img_io, mimetype='image/png')
 
     if file_ext(file.filename) in ALLOWED_VIDEO_EXTENSIONS:
+
         _, upload_file = tempfile.mkstemp(
             suffix=f"{file.filename.rsplit('.', 1)[1].lower()}")
         file.save(upload_file)
@@ -184,7 +201,16 @@ def detect_post():
         _, twod_vid = tempfile.mkstemp(suffix=f".mp4")
         _, match_json = tempfile.mkstemp(suffix=f".json")
         _, thumbnail = tempfile.mkstemp(suffix=f".jpg")
+
         
+        req: Optional[DetectParams] = DetectParams(match_id=str(uuid.uuid4()), team1='gabe', team2='ryan')
+        ### TODO: REMOVE THE FOLLOWING LINE: 
+        db.insert_match(req.match_id)
+        # try:
+        #     req = DetectParams(**request.get_json())
+        # except ValidationError as e:
+        #    return e.errors()
+
         label_writer = VideoConfig(
             fps=30,
             width=1920,
@@ -227,8 +253,8 @@ def detect_post():
 
         m = Match(
             header=Header(
-                team1=Team(id=0, name="Gabes team", color=colors[0]),
-                team2=Team(id=1, name="Ryans team", color=colors[1]),
+                team1=Team(id=0, name=req.team1, color=colors[0]),
+                team2=Team(id=1, name=req.team2, color=colors[1]),
                 player_teams=teams
             ), match=frames)
 
@@ -249,19 +275,32 @@ def detect_post():
         memory_file.seek(0)
 
         urls = store.upload_data(
-            TEST_MATCH_ID, 
+            req.match_id, 
             label_vid, twod_vid, match_json, thumbnail
         )
 
         db.update_match(
-           TEST_MATCH_ID,
+            req.match_id,
             urls.twod_url,
             urls.label_url,
             urls.match_url,
             urls.thumbnail_url,
         )
-        
-        
+
+        vizs = engine.compute(m)
+        for v in vizs:
+            upload = store.upload_viz(
+                req.match_id,
+                v.name,
+                v.path
+            )
+
+            db.insert_viz(
+                req.match_id,
+                v.name,
+                v.desc,
+                upload.viz_url
+            )
 
         # Send the zip file as an attachment
         return send_file(memory_file, download_name='files.zip', as_attachment=True)
