@@ -7,7 +7,11 @@ import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
-function MyDropzone() {
+type MyDropzoneProps = {
+  isUsable: boolean;
+};
+
+function MyDropzone({ isUsable }: MyDropzoneProps) {
   const { data: session } = useSession();
 
   const onDrop = useCallback(
@@ -49,17 +53,14 @@ function MyDropzone() {
     onDrop,
   });
 
-  if (!session) {
+  if (!session || !isUsable) {
     return (
-      <div
-        className="rounded-md border border-neutral-200 bg-gray-100 p-16 text-center text-black"
-        {...getRootProps()}
-      >
+      <div className="rounded-md border border-neutral-200 bg-gray-100 p-16 text-center text-black">
         <div className="flex justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            fill="purple"
+            fill="black"
             className=" h-12 w-12"
           >
             <path
@@ -69,15 +70,15 @@ function MyDropzone() {
             />
           </svg>
         </div>
-        <p className="text-[#800080]">Dropzone</p>
-        <p>Sign in to upload files</p>
+        <p className="text-black">Dropzone</p>
+        <p>{!session ? "Sign in to upload files." : "Fill in all below fields before uploading."}</p>
       </div>
     );
   }
 
   return (
     <div
-      className="rounded-md border border-neutral-200 bg-gray-100 p-16 text-center text-black"
+      className="rounded-md border border-neutral-200 bg-gray-100 p-16 text-center text-black cursor-pointer"
       {...getRootProps()}
     >
       {/* For menu bar later ?? */}
@@ -87,7 +88,7 @@ function MyDropzone() {
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
-          fill="purple"
+          fill="#02b946"
           className=" h-12 w-12"
         >
           <path
@@ -99,90 +100,52 @@ function MyDropzone() {
       </div>
 
       <input {...getInputProps()} />
-      <p className="text-[#800080]">Dropzone</p>
+      <p className="text-[#02b946]">Dropzone</p>
       {isDragActive ? (
-        <p>Drop the files here ...</p>
+        <p>Drop the files here (mp4, avi, mkv, and flv).</p>
       ) : (
-        <p>Click to add files or drop just about anything on the Board...</p>
+        <p>Click to add files (mp4, avi, mkv, and flv).</p>
       )}
     </div>
   );
 }
 
-function Autocomplete({ items, setFilteredItems, text, setText }) {
-  const onType = (e) => {
-    const searchText = e.target.value;
-    setText(e.target.value);
-
-    setFilteredItems((prevFilteredItems) =>
-      items.filter((item) =>
-        item.toLowerCase().includes(searchText.toLowerCase()),
-      ),
-    );
-    //console.log(searchText);
-  };
-
-  return (
-    <div className="w-full flex-col">
-      <div className="w-full flex-row">
-        <input
-          className="w-1/4 border-2 px-3 py-2"
-          type="text"
-          placeholder={"Search"}
-          onInput={onType}
-          value={text}
-        ></input>
-      </div>
-    </div>
-  );
-}
-
 export default function UploadPage() {
-  const items = [
-    "test",
-    "eggs",
-    "bread",
-    "bread",
-    "bread",
-    "bread",
-    "bread",
-    "breathe",
-  ];
-  const [text, setText] = useState("");
-  const [filteredItems, setFilteredItems] = useState([]);
-  const itemList = [];
+  const [team1Name, setTeam1Name] = useState("");
+  const [team2Name, setTeam2Name] = useState("");
+  const [matchName, setMatchName] = useState("");
 
-  const searchItems =
-    filteredItems.length > 0 || text.length > 0 ? filteredItems : items;
-
-  searchItems.forEach((item, index) => {
-    itemList.push(
-      <Card
-        key={index}
-        style={{ backgroundImage: `url(${"/assets/logopytch.png"})` }}
-        className="flex h-4/5 w-[335px] flex-none bg-gray-100"
-      >
-        <CardContent className="self-end p-2 text-black">{item}</CardContent>
-      </Card>,
-    );
-  });
+  const allFieldsFilled = team1Name && team2Name && matchName;
 
   return (
     <div className="flex h-[100svh] w-full flex-col">
       <div className="flex h-[10%] w-full"></div>
       <div className="flex h-[90%] w-full">
-        <div className="no-scrollbar flex h-full w-full flex-col gap-6 overflow-y-scroll p-4 px-20">
-          <MyDropzone />
-          <div className="flex">
-            <Autocomplete
-              items={items}
-              setFilteredItems={setFilteredItems}
-              text={text}
-              setText={setText}
+        <div className="no-scrollbar flex h-full w-full flex-col gap-6 overflow-y-scroll p-4">
+          <MyDropzone isUsable={allFieldsFilled} />
+          <div className="flex w-full gap-3">
+            <input
+              className="w-full border-2 px-3 py-2"
+              type="text"
+              placeholder={"Team 1 Name"}
+              value={team1Name}
+              onChange={(e) => setTeam1Name(e.target.value)}
+            />
+            <input
+              className="w-full border-2 px-3 py-2"
+              type="text"
+              placeholder={"Team 2 Name"}
+              value={team2Name}
+              onChange={(e) => setTeam2Name(e.target.value)}
+            />
+            <input
+              className="w-full border-2 px-3 py-2"
+              type="text"
+              placeholder={"Match Name"}
+              value={matchName}
+              onChange={(e) => setMatchName(e.target.value)}
             />
           </div>
-
-          <div className="flex h-full flex-wrap gap-3">{itemList}</div>
         </div>
       </div>
     </div>
