@@ -30,7 +30,7 @@ class heatmap(Viz):
                 if player.id in player_teams:
                     team = match.header.team1.name if player_teams[player.id] == "0" else match.header.team2.name
                     if -53 < player.x < 53 and -34 < player.y < 34:
-                        player_data.append({'x': player.x, 'y': player.y, 'team': team})
+                        player_data.append({'x': player.x, 'y': -player.y, 'team': team})
 
         # Convert list of dictionaries to DataFrame
         df = pd.DataFrame(player_data)
