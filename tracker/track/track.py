@@ -17,6 +17,8 @@ from .video import generate_frames
 from .utils import Detection, Rect
 from .localization import localization  
 
+import time
+
 @dataclass(frozen=True)
 class BYTETrackerArgs:
     track_thresh: float = 0.25
@@ -67,11 +69,6 @@ class Tracker:
 
 
         for frame in generate_frames(vid_path):
-            if i % self.homography_rate ==0:
-                res = localization.get_homography(frame, self.localizer)
-                if res is not None:
-                    valid_homography = True
-                    inv_homography, extremities, line_names, line_points = res
                 
             detections = self.detect_image(frame)
             tracks = self.byte_tracker.update(
@@ -80,10 +77,18 @@ class Tracker:
                 img_size=frame.shape,
             )
 
-            detections = self._match_detections(detections, tracks)
-            detections, tracked_frames, tracked_colors = self._update_detected_colors(frame, detections, tracked_frames, tracked_colors)
+            if i % self.homography_rate == 0:
+                res = localization.get_homography(frame, self.localizer)
+                if res is not None:
+                    valid_homography = True
+                    inv_homography, extremities, line_names, line_points = res
 
+            detections = self._match_detections(detections, tracks)
             frame_points = [detect.rect.bottom_center.xy + (1,) for detect in detections] 
+
+            if i % (self.homography_rate / 2) == 0:
+                detections, tracked_frames, tracked_colors = self._update_detected_colors(frame, detections, tracked_frames, tracked_colors)
+
             if valid_homography:
                 global_points = localization.get_pitch_locations(frame_points, inv_homography, test=True)
            
@@ -95,9 +100,9 @@ class Tracker:
             for centroid in tracked_colors[key]:
                 for i in range(3):
                     centroid[i] /= tracked_frames[key]
-                centroid_bgr = (centroid[2], centroid[1], centroid[0])
+                # centroid_bgr = (centroid[2], centroid[1], centroid[0])
                 # solid_img = np.full((100, 100, 3), centroid_bgr, dtype=np.uint8)
-                # cv.imwrite("testing/%d_color_%d.jpg"%(key,index),solid_img)
+                # #cv.imwrite("testing/%d_color_%d.jpg"%(key,index),solid_img)
                 index += 1
         second_avg_color = [tracked_colors[key][1] for key in tracked_colors]
         kmeans = KMeans(n_clusters=2, n_init=10)
@@ -107,7 +112,11 @@ class Tracker:
         labels = [str(x) for x in labels]
         teams = dict(zip([key for key in tracked_colors], labels))
 
-        colors = ['#{:02x}{:02x}{:02x}'.format(int(centroids[0][0]), int(centroids[0][1]), int(centroids[0][2])), '#{:02x}{:02x}{:02x}'.format(int(centroids[1][0]), int(centroids[1][1]), int(centroids[1][2]))]
+        colors = [
+            '#{:02x}{:02x}{:02x}'.format(int(centroids[0][0]), int(centroids[0][1]), int(centroids[0][2])), 
+            '#{:02x}{:02x}{:02x}'.format(int(centroids[1][0]), int(centroids[1][1]), int(centroids[1][2]))
+        ]
+
         return output, teams, colors
 
     def _match_detections(self, detects: list[Detection], tracks: list[STrack]) -> list[Detection]:
@@ -126,13 +135,14 @@ class Tracker:
         for detection in detections:
             if detection.class_name == "player" and detection.tracker_id != -1:
                 box = detection.box(False)
-                img_crop = frame[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
+                chopped_height = (int(box[3]) - int(box[1])) / 2
+                height_max = int(box[1]) + int(chopped_height)
+                img_crop = frame[int(box[1]):height_max, int(box[0]):int(box[2])]
                 img_crop_rgb = cv.cvtColor(img_crop, cv.COLOR_BGR2RGB)
-                # cv.imwrite("testing/%d_img.jpg" %(detection.tracker_id), img_crop)
                 img_crop_rgb = img_crop_rgb.reshape(img_crop_rgb.shape[1]*img_crop_rgb.shape[0], 3)
-                #print("img crop")
-                #print(img_crop_rgb)
+
                 kmeans = KMeans(n_clusters=3, n_init=10)
+
                 s = kmeans.fit(img_crop_rgb)
                 labels = kmeans.labels_
                 labels = list(labels)

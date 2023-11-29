@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from .camera import unproject_image_point
 from .soccerpitch import SoccerPitch
+import time
 
 def draw_detected_pitch_lines(canvas, lines, line_names, field):
     height, width, _ = canvas.shape
@@ -184,8 +185,20 @@ def homography_from_extremities(predictions, width, height):
             line_names.append(k)
     if len(line_matches) >= 4:
         target_pts = [field.point_dict[k][:2] for k in potential_3d_2d_matches.keys()]
+        print("Point names:")
+        print([k for k in potential_3d_2d_matches.keys()])
+        print("Source points:")
+        print(src_pts)
+        print("Target points:")
+        print(target_pts)
         T1 = normalization_transform(target_pts)
         T2 = normalization_transform(src_pts)
+        print("Normalized Source:")
+        print(T2)
+        print("Normalized Target:")
+        print(T1)
+        print("Line Matches: " + str(len(line_matches)))
+        print(line_matches)
         success, homography = estimate_homography_from_line_correspondences(line_matches, T1, T2)
         if success:
             return True, homography, line_names, line_points
