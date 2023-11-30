@@ -41,8 +41,8 @@ export default function RootLayout({
         <ProgressBar />
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <Header />
             <TRPCReactProvider headers={headers()}>
+            <Header />
               {children}
             </TRPCReactProvider>
           </ThemeProvider>
