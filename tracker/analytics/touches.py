@@ -12,6 +12,7 @@ class touchesXY(Viz):
         self.x_range = x_range
         self.y_range = y_range
 
+    @property
     def name(self) -> str: 
         x = "" if self.x_range is None else f"X [{self.x_range}]"
         y = "" if self.y_range is None else f" and Y [{self.y_range}]"
@@ -25,6 +26,10 @@ class touchesXY(Viz):
         
         player_in_possesion = [] 
         player_teams = match.header.player_teams
+
+
+        team1_name = match.header.team1.name 
+        team2_name = match.header.team2.name 
 
         for frame in match.match:
             ball = frame.ball
@@ -48,18 +53,32 @@ class touchesXY(Viz):
                         continue
 
                 if p_id in player_teams:
-                    team = match.header.team1.name if player_teams[p_id] == "0" else match.header.team2.name
-                    player_in_possesion.append({'x': player.x, 'y': player.y, 'team': team})
+                    team = team1_name if player_teams[p_id] == "0" else team2_name
+                    player_in_possesion.append({'x': player.x, 'y': -player.y, 'team': team})
+
+        print(player_in_possesion)
+
 
         df = pd.DataFrame(player_in_possesion)
+        if 'team' not in df.columns:
+            # If there's no 'team' column, create a DataFrame with placeholder data for all teams
+            all_teams = set(player_teams.values())
+            placeholder_data = [{'x': None, 'y': None, 'team': team} for team in all_teams]
+            df = pd.DataFrame(placeholder_data)
 
-        # Create density heatmaps for each team
+        teams_present = df['team'].unique()
+        if len(teams_present) < 2:
+            # Identify the missing team(s) and add an empty row for them
+            missing_teams = set([team1_name, team2_name]) - set(teams_present)
+            for team in missing_teams:
+                missing_df = pd.DataFrame({'x': [None], 'y': [None], 'team': [team]})       # Create density heatmaps for each team
+                df = pd.concat([df, missing_df], ignore_index=True)
+
         fig = px.density_heatmap(
             df, x='x', y='y', 
             facet_col='team', nbinsx=30, nbinsy=30, 
-            title=self.name(), 
-            marginal_x='violin', 
-            range_x=[-53, 53], range_y=[-34, 34]
+            title=self.name, 
+            range_x=[-53, 5], range_y=[-34, 34]
         )
 
         fig.update_traces(opacity=0.7)
