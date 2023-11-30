@@ -29,16 +29,19 @@ class heatmap(Viz):
             for player in frame.players:
                 if player.id in player_teams:
                     team = match.header.team1.name if player_teams[player.id] == "0" else match.header.team2.name
-                    player_data.append({'x': player.x, 'y': player.y, 'team': team})
+                    if -53 < player.x < 53 and -34 < player.y < 34:
+                        player_data.append({'x': player.x, 'y': -player.y, 'team': team})
 
         # Convert list of dictionaries to DataFrame
         df = pd.DataFrame(player_data)
 
 
         # Create density heatmaps for each team
-        fig = px.density_heatmap(df, x='x', y='y', facet_col='team', nbinsx=30, nbinsy=30, 
-                                title='Player Position Density Heatmap', marginal_x='violin', 
-                                range_x=[-53, 53], range_y=[-34, 34])
+        fig = px.density_heatmap(
+            df, x='x', y='y', facet_col='team', nbinsx=30, nbinsy=30, 
+            title='Player Position Density Heatmap',  
+            range_x=[-53, 53], range_y=[-34, 34]
+        )
 
         fig.update_traces(opacity=0.7)
 

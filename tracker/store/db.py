@@ -32,13 +32,13 @@ class PytchDB:
     def insert_match(self, match_id: str):
         query = """
         INSERT INTO GameMatch
-            (match_id, user_id, name, date)
+            (match_id, user_id, name, date, team1name, team2name)
         VALUES 
-            (%s, %s, %s, %s)
+            (%s, %s, %s, %s, %s, %s)
         """
         cursor = self._db.cursor()
         cursor.execute(query,
-            [match_id, 1, "My Test Match", datetime.now()]
+            [match_id, 1, "My Test Match", datetime.now(), "RYAN", "GABE"]
         )
         self._db.commit()
         cursor.close()
