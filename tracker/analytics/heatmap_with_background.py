@@ -20,6 +20,8 @@ class heatmap(Viz):
         # Extract the mapping of player IDs to teams and match frames
         player_teams = match.header.player_teams
         match_frames = match.match
+        team1_name = match.header.team1.name
+        team2_name = match.header.team2.name
 
         # List to hold player data
         player_data = []
@@ -32,6 +34,10 @@ class heatmap(Viz):
                     if -53 < player.x < 53 and -34 < player.y < 34:
                         player_data.append({'x': player.x, 'y': -player.y, 'team': team})
 
+        player_data += [
+            {'x': None, 'y':None, 'team': team} 
+             for team in [team1_name, team2_name]
+        ]
         # Convert list of dictionaries to DataFrame
         df = pd.DataFrame(player_data)
 
