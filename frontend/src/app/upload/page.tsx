@@ -19,6 +19,8 @@ import {
 } from "@/app/_components/ui/popover";
 import { api } from "@/trpc/react";
 import { createId } from "@paralleldrive/cuid2";
+import { Input } from "@/app/_components/ui/input";
+import { Label } from "@/app/_components/ui/label";
 
 type MyDropzoneProps = {
   isUsable: boolean;
@@ -51,7 +53,7 @@ function MyDropzone({
         return;
       }
       const matchId = createId();
-      
+
       insertMatch({
         matchId,
         matchName,
@@ -170,11 +172,69 @@ export default function UploadPage() {
     team1Name && team2Name && matchName && date ? true : false;
 
   return (
-    <div className="flex h-[100svh] w-full flex-col">
-      <div className="flex h-[10%] w-full"></div>
-      <div className="flex h-[90%] w-full">
+    <div className="flex h-full w-full flex-col">
+      <div className="flex h-full w-full">
         <div className="no-scrollbar flex h-full w-full flex-col gap-6 overflow-y-scroll p-4">
           <h1 className="text-3xl font-semibold">Upload</h1>
+          <div className="flex w-full gap-3">
+            <div className="grid w-full max-w-[50%] items-center gap-1.5">
+              <Label htmlFor="team1">Team 1</Label>
+              <Input
+                type="text"
+                id="team1"
+                value={team1Name}
+                onChange={(e) => setTeam1Name(e.target.value)}
+                placeholder="Tottenham Hotspur F.C."
+              />
+            </div>
+            <div className="grid w-full max-w-[50%] items-center gap-1.5">
+              <Label htmlFor="team2">Team 2</Label>
+              <Input
+                type="text"
+                id="team2"
+                value={team2Name}
+                onChange={(e) => setTeam2Name(e.target.value)}
+                placeholder="Arsenal F.C."
+              />
+            </div>
+          </div>
+          <div className="flex w-full gap-3 items-center">
+            <div className="grid w-full max-w-[75%] items-center gap-1.5">
+              <Label htmlFor="matchName">Match Name</Label>
+              <Input
+                type="text"
+                id="matchName"
+                value={matchName}
+                onChange={(e) => setMatchName(e.target.value)}
+                placeholder="North London Derby"
+              />
+            </div>
+            <div className="grid w-full max-w-[25%] items-center gap-1.5">
+              <Label htmlFor="matchDate">Match Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !date && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
           <MyDropzone
             isUsable={allFieldsFilled}
             matchName={matchName}
@@ -182,7 +242,7 @@ export default function UploadPage() {
             team2Name={team2Name}
             matchDate={date ?? new Date()}
           />
-          <div className="flex w-full gap-3">
+          {/* <div className="flex w-full gap-3">
             <input
               className="w-full border-2 px-3 py-2"
               type="text"
@@ -204,29 +264,7 @@ export default function UploadPage() {
               value={matchName}
               onChange={(e) => setMatchName(e.target.value)}
             />
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[280px] justify-start text-left font-normal",
-                    !date && "text-muted-foreground",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

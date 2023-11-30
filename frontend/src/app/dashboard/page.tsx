@@ -6,6 +6,7 @@ import React, { useState, type ChangeEvent } from "react";
 
 import { api } from "@/trpc/react";
 import type { GameMatch } from "@prisma/client";
+import { Input } from "@/app/_components/ui/input";
 
 type AutocompleteProps = {
   items: GameMatch[]; // Assuming items is an array of objects with a name property
@@ -32,8 +33,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
   };
 
   return (
-    <input
-      className="border-2 px-3 py-2 w-1/4"
+    <Input
       type="text"
       placeholder="Search"
       onInput={onType}
@@ -58,7 +58,7 @@ export default function UserPage() {
         href={`/dashboard/${match.match_id}`}
         key={index}
         style={{ backgroundImage: `url(${match.thumbnail_url})` }}
-        className="relative flex aspect-video w-full overflow-hidden rounded-lg bg-gray-800 bg-cover duration-300 hover:scale-[101%] md:w-1/2 lg:w-1/3"
+        className="relative flex aspect-video w-full overflow-hidden rounded-lg bg-gray-800 bg-cover duration-300 hover:scale-[101%]"
       >
         <div className="z-10 flex flex-col gap-1 self-end p-4 text-white">
           <h1 className="text-3xl font-bold">{match.name}</h1>
@@ -89,7 +89,7 @@ export default function UserPage() {
         text={text}
         setText={setText}
       />
-      <div className="flex flex-wrap gap-5">{matchList}</div>
+      <div className="grid max-md:grid-cols-1 max-lg:grid-cols-2 grid-cols-3 gap-3">{matchList}</div>
     </div>
   );
 }
