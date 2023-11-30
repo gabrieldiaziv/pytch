@@ -50,6 +50,14 @@ class passmap(Viz):
         fig.update_yaxes(title_text="y", range=[-34, 34], row=1, col=1)
         fig.update_yaxes(title_text="y", range=[-34, 34], row=1, col=2)
         
+        if 'team' not in df.columns:
+            # If there's no 'team' column, create a DataFrame with placeholder data for all teams
+            placeholder_data = [
+                {'x0': None, 'y0':None, 'x1': None, 'y1':None, 'passer_id': None, 'receiver_id': None,  'team': team} 
+                 for team in ["0", "1"]
+            ]
+            df = pd.DataFrame(placeholder_data)
+
         team0 = df.loc[df["team"] == "0"]
         team1 = df.loc[df["team"] == "1"]
 
