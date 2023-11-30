@@ -79,6 +79,7 @@ class Tracker:
 
             if i % self.homography_rate == 0:
                 res = localization.get_homography(frame, self.localizer)
+                print(f'frame : {i}')
                 if res is not None:
                     valid_homography = True
                     inv_homography, extremities, line_names, line_points = res

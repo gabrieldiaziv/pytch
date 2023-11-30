@@ -20,7 +20,9 @@ class touchesXY(Viz):
 
     @property
     def description(self) -> str:
-        return 'density heatmap of both teams players'
+        x = "" if self.x_range is None else f"X [{self.x_range}]"
+        y = "" if self.y_range is None else f" and Y [{self.y_range}]"
+        return 'shows heatmap of touches for each team when inside of ' + x + y
     
     def generate(self, match: Match) -> go.Figure:
         
