@@ -55,7 +55,7 @@ class conversions(Viz):
                     if dist < self.conversion_dist: 
                         team = team1_name if prev_player[TEAM] == "0" else team2_name
                         conversions.append(
-                            {'x0': prev_player[PLAYER].x, 'y0':prev_player[PLAYER].y, 'x1': player.x, 'y1':-player.y, 'team': team} 
+                            {'x0': prev_player[PLAYER].x, 'y0':-prev_player[PLAYER].y, 'x1': player.x, 'y1':-player.y, 'team': team} 
                         )
                     prev_player = (player, player_teams[player.id])
                 else:
