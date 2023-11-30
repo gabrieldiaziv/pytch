@@ -21,6 +21,7 @@ from cryptography.hazmat.backends import default_backend
 from pydantic import BaseModel, ValidationError
 from flask_pydantic import validate
 from analytics.engine import Engine
+from analytics.touches import touchesXY
 
 from analytics.types import Frame, Header, Match, Team
 from dotenv import load_dotenv
@@ -33,6 +34,8 @@ from track.utils import detects_to_frame
 from track.video import VideoConfig
 from track.localization import localization
 from analytics.heatmap_with_background import heatmap
+from analytics.conversions import conversions
+from analytics.passmap import passmap
 
 load_dotenv()  # load environment variables from .env file
 
@@ -44,8 +47,16 @@ app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'super secret key'
 
-model = Tracker(model_type='best.pt')
-engine = Engine(vizs=[heatmap()])
+model = Tracker(model_type='best.pt') 
+engine = Engine(vizs=[
+    heatmap(),
+    touchesXY(x_range=(-53, -18), y_range=None),
+    touchesXY(x_range=(-18, 18), y_range=None),
+    touchesXY(x_range=(18, 53), y_range=None),
+    conversions(name="Turnovers", desc="shows when a team has a turnover any where across the field.", conversion_dist=float('inf')),
+    conversions(name="Successful Tackles", desc="shows when a team has a turnover because of sucessful tackle.", conversion_dist=5.0),
+    passmap()
+])
 store = PytchStore()
 db = PytchDB()
 

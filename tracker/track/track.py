@@ -79,6 +79,7 @@ class Tracker:
 
             if i % self.homography_rate == 0:
                 res = localization.get_homography(frame, self.localizer)
+                print(f'frame : {i}')
                 if res is not None:
                     valid_homography = True
                     inv_homography, extremities, line_names, line_points = res
@@ -100,9 +101,9 @@ class Tracker:
             for centroid in tracked_colors[key]:
                 for i in range(3):
                     centroid[i] /= tracked_frames[key]
-                # centroid_bgr = (centroid[2], centroid[1], centroid[0])
-                # solid_img = np.full((100, 100, 3), centroid_bgr, dtype=np.uint8)
-                # #cv.imwrite("testing/%d_color_%d.jpg"%(key,index),solid_img)
+                centroid_bgr = (centroid[2], centroid[1], centroid[0])
+                solid_img = np.full((100, 100, 3), centroid_bgr, dtype=np.uint8)
+                cv.imwrite("testing/%d_color_%d.jpg"%(key,index),solid_img)
                 index += 1
         second_avg_color = [tracked_colors[key][1] for key in tracked_colors]
         kmeans = KMeans(n_clusters=2, n_init=10)
@@ -138,6 +139,7 @@ class Tracker:
                 chopped_height = (int(box[3]) - int(box[1])) / 2
                 height_max = int(box[1]) + int(chopped_height)
                 img_crop = frame[int(box[1]):height_max, int(box[0]):int(box[2])]
+                cv.imwrite("testing/" + str(detection.tracker_id) + ".jpg", img_crop)
                 img_crop_rgb = cv.cvtColor(img_crop, cv.COLOR_BGR2RGB)
                 img_crop_rgb = img_crop_rgb.reshape(img_crop_rgb.shape[1]*img_crop_rgb.shape[0], 3)
 

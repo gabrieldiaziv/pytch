@@ -14,7 +14,7 @@ class Ball:
 class Player:
     x: float
     y: float
-    id: Optional[int]
+    id: int
 
 @dataclass_json
 @dataclass
