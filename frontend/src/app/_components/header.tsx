@@ -31,6 +31,11 @@ const Header: React.FC = () => {
               Upload
             </Link>
           ) : null}
+          {session?.user ? (
+            <Link href="/dashboard" className="duration-300 hover:text-gray-500">
+              Dashboard
+            </Link>
+          ) : null}
           <Link href="/api-docs" className="duration-300 hover:text-gray-500">
             API
           </Link>
