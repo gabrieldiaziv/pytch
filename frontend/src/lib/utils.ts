@@ -1,7 +1,7 @@
+import { type useToast } from "@/app/_components/ui/use-toast";
 import { type AppRouter } from "@/server/api/root";
 import { type TRPCClientErrorLike } from "@trpc/client";
 import { clsx, type ClassValue } from "clsx";
-import { toast } from "react-hot-toast";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -11,11 +11,23 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * trpc client error handler
  */
-export function clientErrorHandler(err: TRPCClientErrorLike<AppRouter>) {
+export function clientErrorHandler(
+  err: TRPCClientErrorLike<AppRouter>,
+  toast: ReturnType<typeof useToast>["toast"],
+) {
   if (err.data?.zodError) {
     const msgContent = err.data.zodError.fieldErrors.content;
-    if (msgContent?.[0]) toast.error(msgContent[0]);
+    if (msgContent?.[0])
+      toast({
+        title: "Error",
+        description: msgContent[0],
+        duration: 5000,
+      });
   } else {
-    toast.error(err.message);
+    toast({
+      title: "Error",
+      description: err.message,
+      duration: 5000,
+    });
   }
 }

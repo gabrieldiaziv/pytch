@@ -4,8 +4,6 @@ import Link from "next/link";
 import { Button } from "@/app/_components/ui/button";
 import { api } from "@/trpc/react";
 
-import { Label } from "@/app/_components/ui/label";
-
 const CustomFrame = ({ url }: { url: string }) => {
   const [frameContent, setFrameContent] = useState("");
 
