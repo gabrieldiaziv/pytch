@@ -12,6 +12,7 @@ class touchesXY(Viz):
         self.x_range = x_range
         self.y_range = y_range
 
+    @property
     def name(self) -> str: 
         x = "" if self.x_range is None else f"X [{self.x_range}]"
         y = "" if self.y_range is None else f" and Y [{self.y_range}]"
@@ -70,15 +71,14 @@ class touchesXY(Viz):
             # Identify the missing team(s) and add an empty row for them
             missing_teams = set([team1_name, team2_name]) - set(teams_present)
             for team in missing_teams:
-                print(missing_teams)
                 missing_df = pd.DataFrame({'x': [None], 'y': [None], 'team': [team]})       # Create density heatmaps for each team
                 df = pd.concat([df, missing_df], ignore_index=True)
 
         fig = px.density_heatmap(
             df, x='x', y='y', 
             facet_col='team', nbinsx=30, nbinsy=30, 
-            title=self.name(), 
-            range_x=[-53, 53], range_y=[-34, 34]
+            title=self.name, 
+            range_x=[-53, 5], range_y=[-34, 34]
         )
 
         fig.update_traces(opacity=0.7)
