@@ -9,7 +9,8 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.441.0",
@@ -63,6 +64,7 @@
     "next": "^13.5.4",
     "next-auth": "^4.23.0",
     "next-themes": "^0.2.1",
+    "next13-progressbar": "^1.1.1",
     "nprogress": "^0.2.0",
     "react": "18.2.0",
     "react-day-picker": "^8.9.1",

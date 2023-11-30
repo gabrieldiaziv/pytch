@@ -158,6 +158,9 @@ dependencies:
   next-themes:
     specifier: ^0.2.1
     version: 0.2.1(next@13.5.4)(react-dom@18.2.0)(react@18.2.0)
+  next13-progressbar:
+    specifier: ^1.1.1
+    version: 1.1.1(next@13.5.4)(react@18.2.0)
   nprogress:
     specifier: ^0.2.0
     version: 0.2.0
@@ -3179,7 +3182,6 @@ packages:
 
   /@types/nprogress@0.2.3:
     resolution: {integrity: sha512-k7kRA033QNtC+gLc4VPlfnue58CM1iQLgn1IMAU8VPHGOj7oIHPp9UlhedEnD/Gl8evoCjwkZjlBORtZ3JByUA==}
-    dev: true
 
   /@types/prop-types@15.7.9:
     resolution: {integrity: sha512-n1yyPsugYNSmHgxDFjicaI2+gCNjsBck8UX9kuofAKlc0h1bL+20oSF72KeNaW2DUlesbEVCFgyV2dPGTiY42g==}
@@ -4976,6 +4978,19 @@ packages:
       next: 13.5.4(react-dom@18.2.0)(react@18.2.0)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
+    dev: false
+
+  /next13-progressbar@1.1.1(next@13.5.4)(react@18.2.0):
+    resolution: {integrity: sha512-8BTeft/1KLNkaJCKGXYK5SSkKmTBkg7MogH0z+huw+YP2deXKuZ/iqGamvWmhDS+dcCNs5Chdb8KhNTybn2zLA==}
+    peerDependencies:
+      next: '>= 13.0.0'
+      react: '>= 18.0.0'
+    dependencies:
+      '@types/nprogress': 0.2.3
+      next: 13.5.4(react-dom@18.2.0)(react@18.2.0)
+      nprogress: 0.2.0
+      prop-types: 15.8.1
+      react: 18.2.0
     dev: false
 
   /next@13.5.4(react-dom@18.2.0)(react@18.2.0):

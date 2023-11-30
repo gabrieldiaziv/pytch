@@ -13,9 +13,9 @@ import { MuseoModerno } from "next/font/google";
 const museo = MuseoModerno({ subsets: ["latin"] });
 
 const Header: React.FC = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   return (
-    <header className="fixed left-0 top-0 z-50 w-full border-b bg-inherit p-4">
+    <header className="sticky left-0 top-0 z-50 w-full border-b bg-inherit p-4">
       <nav className="flex flex-wrap items-center justify-between">
         <div className="mr-6 flex flex-shrink-0 items-center">
           <Link

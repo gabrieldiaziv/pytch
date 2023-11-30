@@ -32,17 +32,13 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
   };
 
   return (
-    <div className="w-full flex-col">
-      <div className="w-full flex-row">
-        <input
-          className="w-1/4 border-2 px-3 py-2"
-          type="text"
-          placeholder="Search"
-          onInput={onType}
-          value={text}
-        />
-      </div>
-    </div>
+    <input
+      className="border-2 px-3 py-2 w-1/4"
+      type="text"
+      placeholder="Search"
+      onInput={onType}
+      value={text}
+    />
   );
 };
 
@@ -83,22 +79,17 @@ export default function UserPage() {
       </Link>,
     );
   });
+
   return (
-    <div className="flex h-[100svh] w-full flex-col">
-      <div className="flex h-[10%] w-full"></div>
-      <div className="flex h-[90%] w-full">
-        <div className="flex h-1/2 w-full flex-col gap-6 p-4">
-          <h1 className="text-3xl font-semibold">Dashboard</h1>
-          <Autocomplete
-            items={matches}
-            setFilteredItems={setFilteredItems}
-            text={text}
-            setText={setText}
-          />
-          <div>{matchList}</div>
-          <div className="flex h-full"></div>
-        </div>
-      </div>
+    <div className="flex flex-col gap-6 p-4">
+      <h1 className="text-3xl font-semibold">Dashboard</h1>
+      <Autocomplete
+        items={matches}
+        setFilteredItems={setFilteredItems}
+        text={text}
+        setText={setText}
+      />
+      <div className="flex flex-wrap gap-5">{matchList}</div>
     </div>
   );
 }
