@@ -26,6 +26,12 @@ class touchesXY(Viz):
         player_in_possesion = [] 
         player_teams = match.header.player_teams
 
+        team1_has_touch = False
+        team2_has_touch = False
+
+        team1_name = match.header.team1.name 
+        team2_name = match.header.team2.name 
+
         for frame in match.match:
             ball = frame.ball
             if ball is not None and ball.player is not None:
@@ -48,11 +54,17 @@ class touchesXY(Viz):
                         continue
 
                 if p_id in player_teams:
-                    team = match.header.team1.name if player_teams[p_id] == "0" else match.header.team2.name
-                    player_in_possesion.append({'x': player.x, 'y': player.y, 'team': team})
+                    team = team1_name if player_teams[p_id] == "0" else team2_name
+                    if team == team1_name:
+                        team1_has_touch = True
+                    if team == team2_name:
+                        team2_has_touch = True
+                    player_in_possesion.append({'x': player.x, 'y': -player.y, 'team': team})
+
+        print(player_in_possesion)
+
 
         df = pd.DataFrame(player_in_possesion)
-
         # Create density heatmaps for each team
         fig = px.density_heatmap(
             df, x='x', y='y', 
@@ -78,8 +90,12 @@ class touchesXY(Viz):
             layer="below"
         )
 
-        fig.add_layout_image(bg_img, row=1, col=1)
-        fig.add_layout_image(bg_img, row=1, col=2)
+        col = 1
+        if team1_has_touch:
+            fig.add_layout_image(bg_img, row=1, col=col)
+            col += 1
+        if team2_has_touch:
+            fig.add_layout_image(bg_img, row=1, col=col)
 
         return fig
 

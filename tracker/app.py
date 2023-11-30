@@ -21,6 +21,7 @@ from cryptography.hazmat.backends import default_backend
 from pydantic import BaseModel, ValidationError
 from flask_pydantic import validate
 from analytics.engine import Engine
+from analytics.touches import touchesXY
 
 from analytics.types import Frame, Header, Match, Team
 from dotenv import load_dotenv
@@ -45,7 +46,12 @@ CORS(app)
 app.config['SECRET_KEY'] = 'super secret key'
 
 model = Tracker(model_type='best.pt') 
-engine = Engine(vizs=[heatmap()])
+engine = Engine(vizs=[
+    heatmap(),
+    touchesXY(x_range=(-53, -18), y_range=None),
+    touchesXY(x_range=(-18, 18), y_range=None),
+    touchesXY(x_range=(18, 53), y_range=None),
+])
 store = PytchStore()
 db = PytchDB()
 
