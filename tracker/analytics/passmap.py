@@ -21,6 +21,7 @@ class passmap(Viz):
         # Extract the mapping of player IDs to teams and match frames
         player_teams = match.header.player_teams
         match_frames = match.match
+        print(match.header.player_teams)
 
         # List to hold pass data
         pass_data = []
@@ -31,7 +32,9 @@ class passmap(Viz):
             # Check if ball is located and player is assigned
             if frame.ball is not None and frame.ball.player is not None and frame.ball.player != -1:
                 # Check if current ball owner and last known ball owner are on the same team
-                if last_ball_possession is not None and player_teams[last_ball_possession.player] == player_teams[frame.ball.player] and last_ball_possession.player != frame.ball.player:
+                if last_ball_possession is not None and last_ball_possession.player in player_teams and \
+                    frame.ball.player in player_teams and \
+                    player_teams[last_ball_possession.player] == player_teams[frame.ball.player] and last_ball_possession.player != frame.ball.player:
                     #print("Pass from " + str(last_ball_possession.player) + " to " + str(frame.ball.player))
                     pass_data.append({"x0" : last_ball_possession.x, "y0" : last_ball_possession.y * -1, "x1" : frame.ball.x, "y1" : frame.ball.y * -1, "team" : player_teams[frame.ball.player], "passer_id" : last_ball_possession.player, "receiver_id" : frame.ball.player})
                 last_ball_possession = frame.ball
