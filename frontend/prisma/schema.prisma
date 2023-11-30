@@ -84,39 +84,27 @@ model UserData {
     @@index([id])
 }
 
-model Team {
-    id          String      @id @default(cuid())
-    name        String      @db.VarChar(50)
-    league      String?     @db.VarChar(50)
-    homeMatches GameMatch[] @relation("teamHome")
-    awayMatches GameMatch[] @relation("teamAway")
-}
-
 enum MatchVisibility {
     PUBLIC
     PRIVATE
 }
 
 model GameMatch {
-    match_id    String          @id @default(cuid())
-    user_id     String
-    public      MatchVisibility @default(PUBLIC)
-    name        String?         @db.VarChar(50) // name given by user for match
-    teamid_home String?
-    teamid_away String?
-    date        DateTime? // date match was uploaded
-    user        UserData        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    teamHome    Team?           @relation(fields: [teamid_home], references: [id], onDelete: SetNull, name: "teamHome")
-    teamAway    Team?           @relation(fields: [teamid_away], references: [id], onDelete: SetNull, name: "teamAway")
-    Viz         Viz[]
-    match_json         String?        @db.VarChar(250) // URL or path to the match data json
-    localization_video String?        @db.VarChar(250) // URL or path to the localization video
-    generated_video    String?        @db.VarChar(250) // URL or path to the generated video
-    thumbnail_url      String?        @db.VarChar(250) // URL or path to the thumbnail image
+    match_id           String          @id @default(cuid())
+    user_id            String
+    public             MatchVisibility @default(PUBLIC)
+    name               String         @db.VarChar(50) // name given by user for match
+    team1Name          String
+    team2Name          String
+    date               DateTime // date match was uploaded
+    user               UserData        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    Viz                Viz[]
+    match_json         String?         @db.VarChar(250) // URL or path to the match data json
+    localization_video String?         @db.VarChar(250) // URL or path to the localization video
+    generated_video    String?         @db.VarChar(250) // URL or path to the generated video
+    thumbnail_url      String?         @db.VarChar(250) // URL or path to the thumbnail image
 
     @@index([user_id])
-    @@index([teamid_home])
-    @@index([teamid_away])
 }
 
 model Viz {

@@ -134,4 +134,3 @@ ultralytics==8.0.199
 urllib3==2.0.6
 Werkzeug==3.0.0
 xmltodict==0.13.0
--e git+https://github.com/GabrielDiazIV/ByteTrack.git@8ae63e467befaa6bfc18a0c8ff84ce3592cfc461#egg=yolox&subdirectory=../../../../tracker/track/ByteTrack

@@ -1,18 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import Link from "next/link";
 import { Button } from "@/app/_components/ui/button";
 import { api } from "@/trpc/react";
-
-const formatDate = (dateString: string): string => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
 
 const CustomFrame = ({ url }: { url: string }) => {
   const [frameContent, setFrameContent] = useState('');
@@ -34,8 +24,8 @@ const CustomFrame = ({ url }: { url: string }) => {
       }
     };
 
-    fetchHtmlContent();
-  }, []);
+    void fetchHtmlContent();
+  }, [url]);
 
   return (
     <div>
@@ -50,22 +40,8 @@ const CustomFrame = ({ url }: { url: string }) => {
 };
 
 export default function MatchPage({ params }: { params: { id: string } }) {
-  const [match, setMatch] = useState<any>(null); // State to store match data
+  const match = api.match.getMatch.useQuery({ matchId: params.id }).data;
   const vizs = api.match.getVizs.useQuery({ matchId: params.id });
-
-  useEffect(() => {
-    async function fetchData() {
-      // const session = await getServerSession(authOptions); // Uncomment if needed
-      try {
-        const response = await axios.get(`/api/matches/${params.id}`);
-        setMatch(response.data.match); // Storing match in state
-      } catch (error) {
-        console.error("Error fetching match data:", error);
-      }
-    }
-
-    fetchData();
-  }, [params.id]); // Include params.id in the dependency array
 
   return (
     <div className="flex h-[100svh] w-full flex-col">
@@ -81,9 +57,15 @@ export default function MatchPage({ params }: { params: { id: string } }) {
                   </Link>
                   <div className="flex w-full items-baseline gap-3">
                     <h1 className="text-3xl font-semibold">
-                      {match.name}: {match.teamid_home} vs. {match.teamid_away}
+                      {match.name}: {match.team1Name} vs. {match.team2Name}
                     </h1>
-                    <p className="text-sm">{formatDate(match.date)}</p>
+                    <p className="text-sm">
+                      {match.date?.toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
                   </div>
                 </div>
 
@@ -97,10 +79,9 @@ export default function MatchPage({ params }: { params: { id: string } }) {
                       muted
                     >
                       <source
-                        src="https://pytchtestbucket.s3.amazonaws.com/MATCH_ID_134-label.mp4"
+                        src={match.generated_video ?? ""}
                         type="video/mp4"
                       />
-                      {/* <source src={match.generated_video} type="video/mp4" /> */}
                       <p>Your browser does not support the video tag.</p>
                     </video>
                   </div>
@@ -114,10 +95,9 @@ export default function MatchPage({ params }: { params: { id: string } }) {
                       muted
                     >
                       <source
-                        src="https://pytchtestbucket.s3.amazonaws.com/MATCH_ID_134-2d.mp4"
+                        src={match.localization_video ?? ""}
                         type="video/mp4"
                       />
-                      {/* <source src={match.localization_video} type="video/mp4" /> */}
                       <p>Your browser does not support the video tag.</p>
                     </video>
                   </div>
@@ -128,10 +108,10 @@ export default function MatchPage({ params }: { params: { id: string } }) {
                     {vizs.data ? (
                       <div>
                         {vizs.data.map((match, index) => (
-                          <div>
+                          <div key={index}>
                             <h1>{match.name}</h1>
                             <h2>{match.descr}</h2>
-                            <CustomFrame url={match.url}/>
+                            <CustomFrame url={match.url} />
                           </div>
                         ))}
                       </div>

@@ -5,7 +5,7 @@ import zipfile
 from dataclasses import asdict
 import os
 import uuid
-
+from datetime import datetime
 
 from dotenv import load_dotenv
 import jwt
@@ -44,7 +44,7 @@ app = Flask(__name__)
 CORS(app)
 app.config['SECRET_KEY'] = 'super secret key'
 
-model = Tracker(model_type='best.pt') 
+model = Tracker(model_type='best.pt')
 engine = Engine(vizs=[heatmap()])
 store = PytchStore()
 db = PytchDB()
@@ -108,7 +108,6 @@ def verify_id_token():
 #     print('access token verified')
 
 
-
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
@@ -130,8 +129,8 @@ class DetectParams(BaseModel):
     class Config:
         fields = {
             'match_id': 'match_id',
-            'team1' : 'team_1',
-            'team2' : 'team_2'
+            'team1': 'team_1',
+            'team2': 'team_2'
         }
 
 
@@ -159,8 +158,13 @@ def detect_get():
 
 
 def detect_post():
+    matchId = request.form.get('matchId')
+    team1Name = request.form.get('team1Name')
+    team2Name = request.form.get('team2Name')
+            
     if "file" not in request.files:
         flash("No selected file")
+        print("no file")
         return redirect(request.url)
 
     file = request.files["file"]
@@ -202,14 +206,8 @@ def detect_post():
         _, match_json = tempfile.mkstemp(suffix=f".json")
         _, thumbnail = tempfile.mkstemp(suffix=f".jpg")
 
-        
-        req: Optional[DetectParams] = DetectParams(match_id=str(uuid.uuid4()), team1='gabe', team2='ryan')
-        ### TODO: REMOVE THE FOLLOWING LINE: 
-        db.insert_match(req.match_id)
-        # try:
-        #     req = DetectParams(**request.get_json())
-        # except ValidationError as e:
-        #    return e.errors()
+        req: Optional[DetectParams] = DetectParams(
+            match_id=matchId, team1=team1Name, team2=team2Name)
 
         label_writer = VideoConfig(
             fps=30,
@@ -243,7 +241,6 @@ def detect_post():
                 h, w, coords, line_names, line_points)
             frames.append(detects_to_frame(i, detects, coords))
 
-             
             if i == 0:
                 cv2.imwrite(thumbnail, label_img)
 
@@ -275,7 +272,7 @@ def detect_post():
         memory_file.seek(0)
 
         urls = store.upload_data(
-            req.match_id, 
+            req.match_id,
             label_vid, twod_vid, match_json, thumbnail
         )
 

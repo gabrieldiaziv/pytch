@@ -1,28 +1,73 @@
 "use client";
 
-import { Card, CardContent } from "@/app/_components/ui/card";
 import { env } from "@/env.mjs";
+import { clientErrorHandler, cn } from "@/lib/utils";
 import axios from "axios";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import { toast } from "react-hot-toast";
+
+import { Button } from "@/app/_components/ui/button";
+import { Calendar } from "@/app/_components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/app/_components/ui/popover";
+import { api } from "@/trpc/react";
+import { createId } from "@paralleldrive/cuid2";
 
 type MyDropzoneProps = {
   isUsable: boolean;
+  matchName: string;
+  team1Name: string;
+  team2Name: string;
+  matchDate: Date;
 };
 
-function MyDropzone({ isUsable }: MyDropzoneProps) {
+function MyDropzone({
+  isUsable,
+  matchName,
+  team1Name,
+  team2Name,
+  matchDate,
+}: MyDropzoneProps) {
   const { data: session } = useSession();
+  const { mutate: insertMatch } = api.match.insertMatch.useMutation({
+    onSuccess: () => {
+      toast.success("Match sent, go to TODO: {page} for results");
+    },
+    onError: (err) => {
+      clientErrorHandler(err);
+    },
+  });
 
   const onDrop = useCallback(
     <T extends File>(acceptedFiles: T[]) => {
       if (!session) {
         return;
       }
+      const matchId = createId();
+      
+      insertMatch({
+        matchId,
+        matchName,
+        team1Name,
+        team2Name,
+        matchDate,
+      });
+
+      // send files to backend
 
       acceptedFiles.forEach((file) => {
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("matchId", matchId);
+        formData.append("team1Name", team1Name);
+        formData.append("team2Name", team2Name);
 
         axios
           .post(env.NEXT_PUBLIC_FLASK_URL + "/detect", formData, {
@@ -44,7 +89,7 @@ function MyDropzone({ isUsable }: MyDropzoneProps) {
           });
       });
     },
-    [session],
+    [insertMatch, matchDate, matchName, session, team1Name, team2Name],
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -71,14 +116,18 @@ function MyDropzone({ isUsable }: MyDropzoneProps) {
           </svg>
         </div>
         <p className="text-black">Dropzone</p>
-        <p>{!session ? "Sign in to upload files." : "Fill in all below fields before uploading."}</p>
+        <p>
+          {!session
+            ? "Sign in to upload files."
+            : "Fill in all below fields before uploading."}
+        </p>
       </div>
     );
   }
 
   return (
     <div
-      className="rounded-md border border-neutral-200 bg-gray-100 p-16 text-center text-black cursor-pointer"
+      className="cursor-pointer rounded-md border border-neutral-200 bg-gray-100 p-16 text-center text-black"
       {...getRootProps()}
     >
       {/* For menu bar later ?? */}
@@ -115,14 +164,24 @@ export default function UploadPage() {
   const [team2Name, setTeam2Name] = useState("");
   const [matchName, setMatchName] = useState("");
 
-  const allFieldsFilled = team1Name && team2Name && matchName ? true : false;
+  const [date, setDate] = useState<Date>();
+
+  const allFieldsFilled =
+    team1Name && team2Name && matchName && date ? true : false;
 
   return (
     <div className="flex h-[100svh] w-full flex-col">
       <div className="flex h-[10%] w-full"></div>
       <div className="flex h-[90%] w-full">
         <div className="no-scrollbar flex h-full w-full flex-col gap-6 overflow-y-scroll p-4">
-          <MyDropzone isUsable={allFieldsFilled} />
+          <h1 className="text-3xl font-semibold">Upload</h1>
+          <MyDropzone
+            isUsable={allFieldsFilled}
+            matchName={matchName}
+            team1Name={team1Name}
+            team2Name={team2Name}
+            matchDate={date ?? new Date()}
+          />
           <div className="flex w-full gap-3">
             <input
               className="w-full border-2 px-3 py-2"
@@ -145,6 +204,28 @@ export default function UploadPage() {
               value={matchName}
               onChange={(e) => setMatchName(e.target.value)}
             />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[280px] justify-start text-left font-normal",
+                    !date && "text-muted-foreground",
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
