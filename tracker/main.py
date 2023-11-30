@@ -16,7 +16,7 @@ engine = Engine(vizs=[
     conversions(name="Successful Tackles", desc="shows when a team has a turnover because of sucessful tackle.", conversion_dist=5.0),
 ])
 
-with open('./analytics/testing/output_redyellow_30.json', 'r') as file:
+with open('./analytics/testing/1sec.json', 'r') as file:
     data = json.load(file)
     m = Match.from_dict(data)
      

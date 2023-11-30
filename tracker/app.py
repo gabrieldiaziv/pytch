@@ -30,7 +30,7 @@ from store.s3 import PytchStore
 
 from track.annontate import COLORS, THICKNESS, BaseAnnotator, TextAnnotator
 from track.track import Tracker
-from track.utils import detects_to_frame
+from track.utils import GenWrapper, detects_to_frame
 from track.video import VideoConfig
 from track.localization import localization
 from analytics.heatmap_with_background import heatmap
@@ -238,9 +238,9 @@ def detect_post():
 
         i = 0
 
-        output, teams, colors = model.detect_video(upload_file)
+        gen = GenWrapper(model.detect_video(upload_file))
 
-        for frame, detects, coords, extremities, line_names, line_points in output:
+        for frame, detects, coords, extremities, line_names, line_points in gen:
             label_img = frame.copy()
             h, w, _ = frame.shape
 
@@ -259,6 +259,7 @@ def detect_post():
             twod_writer.write(twod_img)
             i += 1
 
+        teams, colors = gen.value
         m = Match(
             header=Header(
                 team1=Team(id=0, name=req.team1, color=colors[0]),

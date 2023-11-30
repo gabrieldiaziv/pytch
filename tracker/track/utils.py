@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Generator, Generic, Optional, Type, TypeVar
 
 from analytics.types import Player, Ball, Frame
 import numpy as np
@@ -8,6 +8,16 @@ import numpy as np
 PLAYER_BALL_PROXIMITY = 5.0
 
 Coord = tuple[float,float]
+
+T = TypeVar("T")
+S = TypeVar("S")
+R = TypeVar("R")
+class GenWrapper(Generic[T,S,R]):
+    def __init__(self, gen: Generator[T,S,R]):
+        self.gen : Generator[T,S,R] = gen
+
+    def __iter__(self):
+        self.value = yield from self.gen
 
 @dataclass(frozen=True)
 class Point:
