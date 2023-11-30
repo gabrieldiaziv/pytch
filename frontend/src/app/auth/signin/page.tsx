@@ -5,16 +5,13 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/app/_components/ui/card";
 import { Icons } from "@/app/_components/icons";
-import { createId } from "@paralleldrive/cuid2";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
-import { env } from "@/env.mjs";
 import { getBaseUrl } from "@/utils";
 import { MuseoModerno } from "next/font/google";
 

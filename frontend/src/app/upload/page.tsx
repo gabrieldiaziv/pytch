@@ -4,11 +4,11 @@ import { env } from "@/env.mjs";
 import { clientErrorHandler, cn } from "@/lib/utils";
 import axios from "axios";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { ArrowRight, Calendar as CalendarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { toast } from "react-hot-toast";
+import { useToast } from "@/app/_components/ui/use-toast";
 
 import { Button } from "@/app/_components/ui/button";
 import { Calendar } from "@/app/_components/ui/calendar";
@@ -21,6 +21,8 @@ import { api } from "@/trpc/react";
 import { createId } from "@paralleldrive/cuid2";
 import { Input } from "@/app/_components/ui/input";
 import { Label } from "@/app/_components/ui/label";
+import { ToastAction } from "../_components/ui/toast";
+import { useRouter } from "next/navigation";
 
 type MyDropzoneProps = {
   isUsable: boolean;
@@ -28,6 +30,7 @@ type MyDropzoneProps = {
   team1Name: string;
   team2Name: string;
   matchDate: Date;
+  clearInputs?: () => void;
 };
 
 function MyDropzone({
@@ -36,14 +39,32 @@ function MyDropzone({
   team1Name,
   team2Name,
   matchDate,
+  clearInputs
 }: MyDropzoneProps) {
+  const { toast } = useToast();
+  const router = useRouter();
   const { data: session } = useSession();
   const { mutate: insertMatch } = api.match.insertMatch.useMutation({
     onSuccess: () => {
-      toast.success("Match sent, go to TODO: {page} for results");
+      toast({
+        title: "Processing match...",
+        description: "Go to dashboard for results",
+        action: (
+          <ToastAction altText="Link to dashboard" onClick={
+            () => {
+              void router.push("/dashboard");
+            }
+          }><ArrowRight /></ToastAction>
+        ),
+        duration: 5000
+      })
+
+      if (clearInputs) {
+        clearInputs();
+      }
     },
     onError: (err) => {
-      clientErrorHandler(err);
+      clientErrorHandler(err, toast);
     },
   });
 
@@ -165,8 +186,14 @@ export default function UploadPage() {
   const [team1Name, setTeam1Name] = useState("");
   const [team2Name, setTeam2Name] = useState("");
   const [matchName, setMatchName] = useState("");
-
   const [date, setDate] = useState<Date>();
+
+  const clearInputs = useCallback(() => {
+    setTeam1Name("");
+    setTeam2Name("");
+    setMatchName("");
+    setDate(undefined);
+  }, []);
 
   const allFieldsFilled =
     team1Name && team2Name && matchName && date ? true : false;
@@ -241,30 +268,8 @@ export default function UploadPage() {
             team1Name={team1Name}
             team2Name={team2Name}
             matchDate={date ?? new Date()}
+            clearInputs={clearInputs}
           />
-          {/* <div className="flex w-full gap-3">
-            <input
-              className="w-full border-2 px-3 py-2"
-              type="text"
-              placeholder={"Team 1 Name"}
-              value={team1Name}
-              onChange={(e) => setTeam1Name(e.target.value)}
-            />
-            <input
-              className="w-full border-2 px-3 py-2"
-              type="text"
-              placeholder={"Team 2 Name"}
-              value={team2Name}
-              onChange={(e) => setTeam2Name(e.target.value)}
-            />
-            <input
-              className="w-full border-2 px-3 py-2"
-              type="text"
-              placeholder={"Match Name"}
-              value={matchName}
-              onChange={(e) => setMatchName(e.target.value)}
-            />
-          </div> */}
         </div>
       </div>
     </div>
