@@ -26,8 +26,6 @@ class touchesXY(Viz):
         player_in_possesion = [] 
         player_teams = match.header.player_teams
 
-        team1_has_touch = False
-        team2_has_touch = False
 
         team1_name = match.header.team1.name 
         team2_name = match.header.team2.name 
@@ -55,22 +53,31 @@ class touchesXY(Viz):
 
                 if p_id in player_teams:
                     team = team1_name if player_teams[p_id] == "0" else team2_name
-                    if team == team1_name:
-                        team1_has_touch = True
-                    if team == team2_name:
-                        team2_has_touch = True
                     player_in_possesion.append({'x': player.x, 'y': -player.y, 'team': team})
 
         print(player_in_possesion)
 
 
         df = pd.DataFrame(player_in_possesion)
-        # Create density heatmaps for each team
+        if 'team' not in df.columns:
+            # If there's no 'team' column, create a DataFrame with placeholder data for all teams
+            all_teams = set(player_teams.values())
+            placeholder_data = [{'x': None, 'y': None, 'team': team} for team in all_teams]
+            df = pd.DataFrame(placeholder_data)
+
+        teams_present = df['team'].unique()
+        if len(teams_present) < 2:
+            # Identify the missing team(s) and add an empty row for them
+            missing_teams = set([team1_name, team2_name]) - set(teams_present)
+            for team in missing_teams:
+                print(missing_teams)
+                missing_df = pd.DataFrame({'x': [None], 'y': [None], 'team': [team]})       # Create density heatmaps for each team
+                df = pd.concat([df, missing_df], ignore_index=True)
+
         fig = px.density_heatmap(
             df, x='x', y='y', 
             facet_col='team', nbinsx=30, nbinsy=30, 
             title=self.name(), 
-            marginal_x='violin', 
             range_x=[-53, 53], range_y=[-34, 34]
         )
 
@@ -90,12 +97,8 @@ class touchesXY(Viz):
             layer="below"
         )
 
-        col = 1
-        if team1_has_touch:
-            fig.add_layout_image(bg_img, row=1, col=col)
-            col += 1
-        if team2_has_touch:
-            fig.add_layout_image(bg_img, row=1, col=col)
+        fig.add_layout_image(bg_img, row=1, col=1)
+        fig.add_layout_image(bg_img, row=1, col=2)
 
         return fig
 

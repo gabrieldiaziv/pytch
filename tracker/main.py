@@ -9,7 +9,10 @@ with open('./analytics/testing/output_redyellow_30.json', 'r') as file:
 
      
 
-    H = heatmap()
-    H = touchesXY(x_range=(-53.0, 53), y_range=None)
+    H = touchesXY(x_range=(-53, -18), y_range=None)
+    H.generate(m).show()
+    H = touchesXY(x_range=(-18, 18), y_range=None)
+    H.generate(m).show()
+    H = touchesXY(x_range=(18, 53), y_range=None)
     H.generate(m).show()
 
