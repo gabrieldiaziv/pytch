@@ -1,8 +1,8 @@
 #!/bin/env sh
 
 git clone -n --depth=1 --filter=tree:0 \
-  https://github.com/gabrieldiaziv/pytch pytch
-cd pytch-test
+  https://github.com/gabrieldiaziv/pytch 
+cd pytch
 git sparse-checkout set --no-cone tracker/analytics
 git checkout
 
