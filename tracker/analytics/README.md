@@ -7,7 +7,7 @@ Welcome to the Viz library, a tool for creating visualizations of sports matches
 ## Getting Started
 
 1. **Use Pytch to Download Match File"**
-    - Log in to pytch account and go to your dashboard, select a match, and download the match file.
+    - Log in to your Pytch account and go to your dashboard, select a match, and download the match file.
     ![Download Button](https://raw.githubusercontent.com/GabrielDiazIV/pytch/docs/docs/imgs/download-img.png)
 
 1. **Install the Viz Library:**
