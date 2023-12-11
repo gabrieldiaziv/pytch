@@ -5,7 +5,7 @@ services:
     build:
       context: ./db/mysql
       args:
-        pass: ${MYSQL_PASS:-asdfasdf}  
+        pass: ${MYSQL_PASS}  
     ports: 
       - "3306:3306"
     networks:
@@ -17,7 +17,7 @@ services:
     build:
       context: ./db/myphp
       args:
-        pass: ${MYSQL_PASS:-asdfasdf}  
+        pass: ${MYSQL_PASS}  
     environment:
       PMA_HOST: mysql
     ports: 
