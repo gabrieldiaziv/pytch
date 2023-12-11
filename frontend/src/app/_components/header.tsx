@@ -36,7 +36,7 @@ const Header: React.FC = () => {
               Dashboard
             </Link>
           ) : null}
-          <Link href="/api-docs" className="duration-300 hover:text-gray-500">
+          <Link href="https://github.com/GabrielDiazIV/pytch/blob/docs/tracker/analytics/README.md" className="duration-300 hover:text-gray-500">
             API
           </Link>
           <Link href="/help" className="duration-300 hover:text-gray-500">
